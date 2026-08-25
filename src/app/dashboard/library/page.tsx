@@ -9,7 +9,6 @@ import { useLibrary } from "@/components/library/library-provider"
 import { useToast } from "@/components/ui/toast"
 import { searchCovers } from "@/lib/cover-search"
 import { Skeleton } from "@/components/ui/skeleton"
-import { AddTitleDialog } from "@/components/library/add-title-dialog"
 import { SyncAllButton } from "@/components/library/sync-all-button"
 
 function LibraryContent() {
@@ -163,7 +162,6 @@ export default function LibraryPage() {
         </div>
         <div className="flex items-center gap-2">
           <SyncAllButton />
-          <AddTitleDialog />
         </div>
       </div>
       <Suspense fallback={<Skeleton className="h-10 w-full" />}>
