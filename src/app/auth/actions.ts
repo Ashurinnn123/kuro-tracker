@@ -68,7 +68,8 @@ export async function signInWithGoogle() {
     provider: "google",
     options: {
       redirectTo: `${origin}/auth/callback`,
-      queryParams: { access_type: "offline", prompt: "consent" },
+      // ponytail: no prompt=consent/access_type — forced re-consent slows the
+      // round-trip enough to trip Supabase's OAuth state expiry on slow SSOs.
     },
   })
   if (error) redirect(`/login?error=${encodeURIComponent(error.message)}`)
