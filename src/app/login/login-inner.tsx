@@ -86,6 +86,12 @@ export async function LoginPageInner({
               <Input id="password" name="password" type="password" required autoComplete="current-password" />
             </div>
 
+            <div className="mt-2 flex justify-end">
+              <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary">
+                Forgot password?
+              </Link>
+            </div>
+
             <Button type="submit" className="mt-2 h-12 w-full rounded-md bg-primary font-mono text-xs font-bold uppercase tracking-widest text-primary-foreground hover:bg-primary-strong">
               Log In
             </Button>

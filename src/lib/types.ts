@@ -15,6 +15,7 @@ export interface Title {
   genres: string[] // auto-filled from AniList on cover/suggestion pick
   rating: number | null // 1 to 10, one decimal (MyAnimeList style)
   notes: string | null
+  favorite_quote?: string | null // memorable line from the work
   is_favorite: boolean
   started_at: string | null
   completed_at: string | null

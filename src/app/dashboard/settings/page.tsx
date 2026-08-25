@@ -8,17 +8,22 @@ import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/toast"
 import { UserAvatar } from "@/components/ui/user-avatar"
 import { createClient } from "@/lib/supabase/client"
-import { Save, Cloud, User, Camera, Sun, Moon, Monitor } from "lucide-react"
+import { useLibrary } from "@/components/library/library-provider"
+import { Title } from "@/lib/types"
+import { Save, Cloud, User, Camera, Sun, Moon, Monitor, Download, Upload } from "lucide-react"
 
 export default function SettingsPage() {
   const { setTheme, theme, resolvedTheme } = useTheme()
   const { toast } = useToast()
+  const { titles, addTitle } = useLibrary()
   
   // To avoid hydration mismatch with next-themes
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
 
   const [profile, setProfile] = useState<{ name: string; email: string; avatarUrl: string | null }>({ name: "", email: "", avatarUrl: null })
+  const [username, setUsername] = useState("")
+  const [isPublic, setIsPublic] = useState(false)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [signedIn, setSignedIn] = useState(false)
@@ -31,12 +36,76 @@ export default function SettingsPage() {
       setProfile(p => ({ ...p, email: user.email ?? "" }))
       const { data } = await supabase
         .from("profiles")
-        .select("full_name, avatar_url")
+        .select("full_name, avatar_url, username, is_library_public")
         .eq("id", user.id)
         .maybeSingle()
       setProfile(p => ({ ...p, name: data?.full_name ?? "", avatarUrl: data?.avatar_url ?? null }))
+      setUsername(data?.username ?? "")
+      setIsPublic(data?.is_library_public ?? false)
     })
   }, [])
+
+  // Export library as JSON download; import merges titles that aren't
+  // already present (matched by title + media_type).
+  const handleExport = () => {
+    if (titles.length === 0) {
+      toast("Nothing to export — your library is empty.", "error")
+      return
+    }
+    const payload = {
+      app: "kuro-tracker",
+      exported_at: new Date().toISOString(),
+      titles,
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `kuro-library-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast(`Exported ${titles.length} titles`)
+  }
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ""
+    if (!file) return
+    try {
+      const parsed = JSON.parse(await file.text()) as { titles?: Partial<Title>[] }
+      const incoming = Array.isArray(parsed.titles) ? parsed.titles : []
+      if (incoming.length === 0) throw new Error("no titles")
+
+      const existing = new Set(titles.map(t => `${t.title}|${t.media_type}`))
+      let added = 0
+      for (const t of incoming) {
+        if (!t.title || !t.media_type) continue
+        const key = `${t.title}|${t.media_type}`
+        if (existing.has(key)) continue
+        existing.add(key)
+        await addTitle({
+          title: t.title,
+          media_type: t.media_type,
+          cover_url: t.cover_url ?? null,
+          total_chapters: t.total_chapters ?? null,
+          current_chapter: t.current_chapter ?? 0,
+          total_volumes: t.total_volumes ?? null,
+          current_volume: t.current_volume ?? 0,
+          status: t.status ?? "want_to_read",
+          rating: t.rating ?? null,
+          notes: t.notes ?? null,
+          genres: t.genres ?? [],
+          is_favorite: t.is_favorite ?? false,
+          started_at: t.started_at ?? null,
+          completed_at: t.completed_at ?? null,
+        })
+        added++
+      }
+      toast(`Imported ${added} new title(s), skipped ${incoming.length - added} duplicate(s).`)
+    } catch {
+      toast("Invalid export file — expected a Kuro JSON backup.", "error")
+    }
+  }
 
   const handleSaveProfile = async () => {
     const supabase = createClient()
@@ -46,14 +115,27 @@ export default function SettingsPage() {
       return
     }
     setSaving(true)
+    // Username: lowercase slug; empty clears it. Unique violation surfaces a toast.
+    const uname = username.trim().toLowerCase().replace(/[^a-z0-9_]/g, "")
     const { error } = await supabase
       .from("profiles")
-      .upsert({ id: user.id, full_name: profile.name })
+      .upsert({
+        id: user.id,
+        full_name: profile.name,
+        username: uname || null,
+        is_library_public: isPublic,
+      })
     setSaving(false)
     if (error) {
-      toast("Save failed: " + error.message, "error")
+      toast(
+        error.code === "23505"
+          ? "That username is taken — try another."
+          : "Save failed: " + error.message,
+        "error"
+      )
       return
     }
+    if (uname !== username.trim().toLowerCase()) setUsername(uname)
     toast("Profile updated")
     window.dispatchEvent(new Event("profile-updated"))
   }
@@ -185,6 +267,38 @@ export default function SettingsPage() {
               className="max-w-md"
             />
           </div>
+          <div className="grid gap-2">
+            <label className="text-sm font-medium">Username</label>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">/u/</span>
+              <Input
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                placeholder="pick a handle"
+                className="max-w-xs"
+                maxLength={30}
+              />
+            </div>
+            {username && (
+              <p className="text-xs text-muted-foreground">
+                Public shelf: kuro-tracker.vercel.app/u/{username.trim().toLowerCase().replace(/[^a-z0-9_]/g, "") || "…"}
+              </p>
+            )}
+          </div>
+          <label className="flex max-w-md cursor-pointer items-center justify-between rounded-lg border border-border p-3">
+            <span>
+              <span className="block text-sm font-medium">Public library</span>
+              <span className="block text-xs text-muted-foreground">
+                Anyone with your link can see your shelf (covers + status only — never notes).
+              </span>
+            </span>
+            <input
+              type="checkbox"
+              checked={isPublic}
+              onChange={e => setIsPublic(e.target.checked)}
+              className="h-5 w-5 accent-[var(--accent,#60a5fa)]"
+            />
+          </label>
         </CardContent>
         <CardFooter className="border-t border-border/50 px-6 py-4">
           <Button onClick={handleSaveProfile} disabled={saving}>
@@ -225,6 +339,26 @@ export default function SettingsPage() {
               ? "System follows your OS — Windows is currently in light mode, so System and Light look identical."
               : "System follows your OS — Windows is currently in dark mode, so System and Dark look identical."}
           </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Download className="h-5 w-5" /> Export / Import</CardTitle>
+          <CardDescription>Back up your library as JSON, or restore from a Kuro export.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-3">
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="h-4 w-4 mr-2" />
+            Export library
+          </Button>
+          <label>
+            <input type="file" accept="application/json,.json" className="sr-only" onChange={handleImportFile} />
+            <span className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-border bg-transparent px-4 py-2 text-sm font-medium hover:bg-surface-2">
+              <Upload className="h-4 w-4" />
+              Import backup
+            </span>
+          </label>
         </CardContent>
       </Card>
 

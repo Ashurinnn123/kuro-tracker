@@ -3,6 +3,7 @@
 import { BookOpen, CheckCircle, Heart, Layers } from "lucide-react"
 import { StatTile } from "@/components/dashboard/stat-tile"
 import { ReadingChart } from "@/components/dashboard/reading-chart"
+import { ReadingStats } from "@/components/dashboard/reading-stats"
 import { ContinueCard } from "@/components/library/continue-card"
 import { TitleCard } from "@/components/library/title-card"
 import { useLibrary } from "@/components/library/library-provider"
@@ -67,6 +68,8 @@ export default function DashboardPage() {
           icon={<Layers className="h-5 w-5" />} 
         />
       </div>
+
+      <ReadingStats titles={titles} />
 
       <div className="grid gap-4 grid-cols-1 xl:grid-cols-3">
         <ReadingChart />
