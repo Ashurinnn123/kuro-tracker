@@ -103,7 +103,7 @@ export function ExplorePageInner() {
           {items.map((item) => (
             <Link
               key={item.id}
-              href={`/explore/${item.id}`}
+              href={`/dashboard/explore/${item.id}`}
               className="group overflow-hidden rounded-lg border border-border bg-surface transition-transform hover:-translate-y-0.5"
             >
               <div className="aspect-[2/3] w-full overflow-hidden bg-background">

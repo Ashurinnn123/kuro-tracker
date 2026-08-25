@@ -189,7 +189,7 @@ export default function ExploreDetailPage({ params }: { params: Promise<{ id: st
             {media.relations.map((rel) => (
               <Link
                 key={`${rel.relation}-${rel.id}`}
-                href={`/explore/${rel.id}`}
+                href={`/dashboard/explore/${rel.id}`}
                 className="group overflow-hidden rounded-lg border border-border bg-surface transition-transform hover:-translate-y-0.5"
               >
                 <div className="aspect-[2/3] w-full overflow-hidden bg-background">
@@ -216,7 +216,7 @@ export default function ExploreDetailPage({ params }: { params: Promise<{ id: st
             {media.recommendations.map((rec) => (
               <Link
                 key={rec.id}
-                href={`/explore/${rec.id}`}
+                href={`/dashboard/explore/${rec.id}`}
                 className="group overflow-hidden rounded-lg border border-border bg-surface transition-transform hover:-translate-y-0.5"
               >
                 <div className="aspect-[2/3] w-full overflow-hidden bg-background">
