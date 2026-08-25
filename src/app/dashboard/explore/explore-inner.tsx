@@ -56,6 +56,11 @@ export function ExplorePageInner() {
   const [loading, setLoading] = useState(true)
   const [hasNext, setHasNext] = useState(false)
 
+  // Live suggestions while typing — mini preview cards above the grid.
+  const [suggests, setSuggests] = useState<ExploreItem[]>([])
+  const [suggestOpen, setSuggestOpen] = useState(false)
+  const searchRef = useRef<HTMLDivElement>(null)
+
   // Genre/tag dropdowns stay component-local (transient UI, not worth a history entry).
   const [genreOpen, setGenreOpen] = useState(false)
   const genreRef = useRef<HTMLDivElement>(null)
@@ -146,10 +151,32 @@ export function ExplorePageInner() {
       if (tagOpen && tagRef.current && !tagRef.current.contains(e.target as Node)) {
         setTagOpen(false)
       }
+      if (suggestOpen && searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSuggestOpen(false)
+      }
     }
     document.addEventListener("mousedown", onDown)
     return () => document.removeEventListener("mousedown", onDown)
-  }, [genreOpen, tagOpen])
+  }, [genreOpen, tagOpen, suggestOpen])
+
+  // Debounced live suggestions (top 6) whenever the typed text changes.
+  useEffect(() => {
+    const q = search.trim()
+    if (q.length < 2 || q === query) {
+      setSuggestOpen(false)
+      return
+    }
+    const t = setTimeout(() => {
+      fetch(`/api/explore?type=${type}&page=1&search=${encodeURIComponent(q)}`)
+        .then((r) => r.json())
+        .then((data) => {
+          setSuggests((data.items ?? []).slice(0, 6))
+          setSuggestOpen(true)
+        })
+        .catch(() => setSuggestOpen(false))
+    }, 300)
+    return () => clearTimeout(t)
+  }, [search, type, query])
 
   return (
     <div className="space-y-6 pb-12">
@@ -264,17 +291,45 @@ export function ExplorePageInner() {
             </div>
           )}
         </div>
-        <div className="relative ml-auto w-full max-w-xs">
+        <div className="relative ml-auto w-full max-w-xs" ref={searchRef}>
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") commitSearch()
+              if (e.key === "Enter") {
+                setSuggestOpen(false)
+                commitSearch()
+              }
             }}
-            placeholder="Search titles… (Enter)"
+            placeholder="Search titles…"
             className="pl-9"
           />
+          {/* Live suggestion preview — cover + title + score, click = detail */}
+          {suggestOpen && suggests.length > 0 && (
+            <div className="absolute right-0 z-20 mt-2 w-full min-w-80 rounded-lg border border-border bg-surface p-1.5 shadow-xl">
+              <p className="px-2 pb-1 pt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                Suggestions
+              </p>
+              {suggests.map((s) => (
+                <Link
+                  key={s.id}
+                  href={`/dashboard/explore/${s.id}`}
+                  onClick={() => setSuggestOpen(false)}
+                  className="flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-surface-2"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- external CDN cover */}
+                  <img src={s.imageUrl} alt="" className="h-14 w-10 shrink-0 rounded object-cover" />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm">{s.title}</p>
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                      {s.score != null ? `${s.score}%` : "—"} · {s.format ?? "?"}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
