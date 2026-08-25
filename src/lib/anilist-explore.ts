@@ -97,13 +97,14 @@ export async function exploreDetail(anilistId: number) {
       .filter((e) => e.node?.type === "MANGA" && RELATION_PRIORITY.includes(e.relationType))
       .sort((a, b) => RELATION_PRIORITY.indexOf(a.relationType) - RELATION_PRIORITY.indexOf(b.relationType))
       .slice(0, 12)
-      .map((e) => ({ relation: e.relationType, ...mapMedia(e.node) }))
+      .map((e) => ({ relation: e.relationType, ...mapMedia(e.node)! }))
+      .filter((r) => r.imageUrl)
 
     return {
       ...mapMedia(m),
       recommendations: (m.recommendations?.nodes ?? [])
         .map((n) => n.mediaRecommendation)
-        .filter((r): r is RawMedia => r != null)
+        .filter((r): r is RawMedia => r != null && !!r.coverImage?.large)
         .map(mapMedia),
       relations,
     }
