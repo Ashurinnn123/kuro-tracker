@@ -75,6 +75,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!service) return
     setIsLoading(true)
+    setTitles([]) // clear previous backend's data before switching
     refreshTitles().finally(() => setIsLoading(false))
   }, [service])
 
