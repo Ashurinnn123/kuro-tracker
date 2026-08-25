@@ -2,11 +2,12 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BookOpen, LayoutDashboard, Settings } from "lucide-react"
+import { BookOpen, LayoutDashboard, Compass, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Explore", href: "/dashboard/explore", icon: Compass },
   { name: "Library", href: "/dashboard/library", icon: BookOpen },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]

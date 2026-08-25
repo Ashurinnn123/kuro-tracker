@@ -49,7 +49,6 @@ export default function TitleDetailPage({ params }: { params: Promise<{ id: stri
         current_volume: completed && title.media_type === "light_novel" && title.total_volumes ? title.total_volumes : (title.current_volume ?? 0),
         cover_url: title.cover_url,
         notes: title.notes,
-        favorite_quote: title.favorite_quote,
         genres: title.genres,
         rating: title.rating
       })
@@ -395,22 +394,6 @@ export default function TitleDetailPage({ params }: { params: Promise<{ id: stri
                   value={title.notes || ""}
                   onChange={e => setTitle({...title, notes: e.target.value})}
                 />
-              </div>
-
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Favorite Quote</label>
-                <textarea
-                  className="min-h-[60px] w-full resize-none rounded-md border border-border bg-surface px-3 py-2 font-serif text-sm italic focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="A line worth remembering…"
-                  maxLength={500}
-                  value={title.favorite_quote || ""}
-                  onChange={e => setTitle({...title, favorite_quote: e.target.value})}
-                />
-                {title.favorite_quote && (
-                  <blockquote className="border-l-2 border-primary/60 pl-3 text-sm italic text-muted-foreground">
-                    “{title.favorite_quote}”
-                  </blockquote>
-                )}
               </div>
 
               <div className="flex justify-end pt-4">
