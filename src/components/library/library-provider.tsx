@@ -12,7 +12,7 @@ import { useToast } from "@/components/ui/toast"
 interface LibraryContextType {
   titles: Title[]
   isLoading: boolean
-  addTitle: (title: Omit<Title, "id" | "user_id" | "created_at" | "updated_at">) => Promise<void>
+  addTitle: (title: Omit<Title, "id" | "user_id" | "created_at" | "updated_at">) => Promise<boolean>
   updateTitle: (id: string, updates: Partial<Omit<Title, "id" | "user_id" | "created_at" | "updated_at">>, opts?: { silent?: boolean }) => Promise<void>
   deleteTitle: (id: string) => Promise<void>
   toggleFavorite: (id: string) => Promise<void>
@@ -80,13 +80,18 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   }, [service])
 
   const addTitle = async (titleData: Omit<Title, "id" | "user_id" | "created_at" | "updated_at">) => {
-    if (!service) return
+    if (!service) return false
     try {
       await service.addTitle(titleData)
       await refreshTitles()
       toast("Title added successfully")
+      return true
     } catch (e) {
-      toast("Failed to add title", "error")
+      // ponytail: surface the real PostgREST message so schema drifts like a
+      // missing migration are diagnosable from the UI alone.
+      const msg = e instanceof Error && e.message ? e.message : "Failed to add title"
+      toast(msg.includes("column") || msg.includes("schema") ? `DB schema outdated: ${msg}` : msg, "error")
+      return false
     }
   }
 

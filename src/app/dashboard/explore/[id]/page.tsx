@@ -91,7 +91,7 @@ export default function ExploreDetailPage({ params }: { params: Promise<{ id: st
     if (inLibrary || adding) return
     setAdding(true)
     try {
-      await addTitle({
+      const ok = await addTitle({
         title: media.title,
         media_type: inferred,
         cover_url: media.imageUrl,
@@ -108,9 +108,8 @@ export default function ExploreDetailPage({ params }: { params: Promise<{ id: st
         started_at: null,
         completed_at: null,
       })
-      toast(`"${media.title}" added to your library`)
-    } catch {
-      toast("Could not add title", "error")
+      // Provider already toasted the failure reason; only celebrate real adds.
+      if (ok) toast(`"${media.title}" added to your library`)
     } finally {
       setAdding(false)
     }
