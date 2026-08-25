@@ -50,6 +50,7 @@ export default function TitleDetailPage({ params }: { params: Promise<{ id: stri
         cover_url: title.cover_url,
         notes: title.notes,
         genres: title.genres,
+        tags: title.tags ?? [],
         rating: title.rating
       })
       // Toast is handled by provider
@@ -100,6 +101,7 @@ export default function TitleDetailPage({ params }: { params: Promise<{ id: stri
       total_volumes: s.volumes ?? title.total_volumes,
       cover_url: s.imageUrl || title.cover_url,
       genres: s.genres.length ? s.genres : title.genres,
+      tags: s.tags.length ? s.tags : title.tags ?? [],
     })
     setSugFocused(false)
     setSug([])
@@ -216,6 +218,17 @@ export default function TitleDetailPage({ params }: { params: Promise<{ id: stri
               {title.genres.map((g) => (
                 <span key={g} className="rounded-full border border-border bg-surface px-2.5 py-0.5 text-xs text-muted-foreground">
                   {g}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Tags — read-only, smaller, auto-filled from AniList */}
+          {(title.tags?.length ?? 0) > 0 && (
+            <div className="flex flex-wrap gap-1 px-1">
+              {title.tags.map((t) => (
+                <span key={t} className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {t}
                 </span>
               ))}
             </div>

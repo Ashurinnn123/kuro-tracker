@@ -40,6 +40,7 @@ export function AddTitleDialog() {
   const [notes, setNotes] = useState("")
   const [rating, setRating] = useState<number | null>(null)
   const [genres, setGenres] = useState<string[]>([]) // auto-filled with cover/suggestion
+  const [tags, setTags] = useState<string[]>([]) // auto-filled with cover/suggestion
   // Title autocomplete (AniList): suggest full titles while typing.
   const [suggestions, setSuggestions] = useState<CoverSearchResult[]>([])
   const [showSug, setShowSug] = useState(false)
@@ -89,6 +90,7 @@ export function AddTitleDialog() {
     setShowSug(false)
     setSuggestions([])
     setGenres(s.genres)
+    setTags(s.tags ?? [])
     if (mediaType === "light_novel") {
       if (s.volumes) { setTotalVolumes(String(s.volumes)); setVolumesLocked(true) }
       if (s.chapters) { setTotalChapters(String(s.chapters)); setChaptersLocked(true); setChapterSource("AniList") }
@@ -106,6 +108,7 @@ export function AddTitleDialog() {
       return
     }
     setGenres(meta.genres)
+    setTags(meta.tags ?? [])
     // The cover result knows its true format (AniList label). Trust it over the
     // Type dropdown — e.g. picking a Light Novel cover while Type=manga flips
     // the entry to light_novel and moves the count into Total Volumes.
@@ -205,6 +208,7 @@ export function AddTitleDialog() {
         notes: notes.trim() || null,
         rating,
         genres: genres.length ? genres : [],
+        tags: tags.length ? tags : [],
         is_favorite: false,
         started_at: status === "reading" ? new Date().toISOString() : null,
         completed_at: null,

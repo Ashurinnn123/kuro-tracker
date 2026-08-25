@@ -20,6 +20,7 @@ interface RawMedia {
   chapters: number | null
   volumes: number | null
   genres: string[] | null
+  tags: { name: string }[] | null
   status: string | null
 }
 
@@ -39,11 +40,12 @@ function mapMedia(item: RawMedia) {
     chapters: item.chapters,
     volumes: item.volumes,
     genres: item.genres ?? [],
+    tags: (item.tags ?? []).map((t) => t.name),
     status: item.status,
   }
 }
 
-export async function exploreList(mediaType: MediaType, page: number, search?: string, genres?: string[]) {
+export async function exploreList(mediaType: MediaType, page: number, search?: string, genres?: string[], tag?: string) {
   if (!Number.isInteger(page) || page < 1 || page > 10) throw new Error("bad page")
   const filter = FILTERS[mediaType] || FILTERS.manga
   const sort = search ? "" : ",sort:TRENDING_DESC"
@@ -52,13 +54,15 @@ export async function exploreList(mediaType: MediaType, page: number, search?: s
     genres && genres.length > 0
       ? `,genre_in:[${genres.map((g) => JSON.stringify(g)).join(",")}]`
       : ""
+  // Single tag filter (AniList has hundreds; free-text keeps it simple).
+  const tagFilter = tag ? `,tag_in:[${JSON.stringify(tag)}]` : ""
   try {
     const res = await fetch("https://graphql.anilist.co", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: AbortSignal.timeout(12000),
       body: JSON.stringify({
-        query: `query($s:String,$p:Int){Page(perPage:24,page:$p){media(search:$s,type:MANGA,isAdult:false,${filter}${sort}${genreFilter}){id title{romaji english} coverImage{large} description(asHtml:false) averageScore format chapters volumes genres status}}}`,
+        query: `query($s:String,$p:Int){Page(perPage:24,page:$p){media(search:$s,type:MANGA,isAdult:false,${filter}${sort}${genreFilter}${tagFilter}){id title{romaji english} coverImage{large} description(asHtml:false) averageScore format chapters volumes genres tags{name} status}}}`,
         variables: { s: search?.trim() || null, p: page },
       }),
     })
@@ -80,7 +84,7 @@ export async function exploreDetail(anilistId: number) {
       body: JSON.stringify({
         query: `query($id:Int){Media(id:$id,type:MANGA){
           id title{romaji english} coverImage{large} bannerImage description(asHtml:false)
-          averageScore format chapters volumes genres status
+          averageScore format chapters volumes genres tags{name} status
           recommendations(perPage:8){nodes{mediaRecommendation{id title{romaji english} coverImage{large} averageScore format}}}
           relations{edges{relationType(version:2) node{id type title{romaji english} coverImage{large} format}}}
         }}`,

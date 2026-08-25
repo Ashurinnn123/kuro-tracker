@@ -95,6 +95,7 @@ export default function SettingsPage() {
           rating: t.rating ?? null,
           notes: t.notes ?? null,
           genres: t.genres ?? [],
+          tags: t.tags ?? [],
           is_favorite: t.is_favorite ?? false,
           started_at: t.started_at ?? null,
           completed_at: t.completed_at ?? null,

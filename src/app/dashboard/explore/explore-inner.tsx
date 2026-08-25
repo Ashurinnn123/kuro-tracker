@@ -20,11 +20,18 @@ const TABS: { key: MediaType; label: string }[] = [
   { key: "light_novel", label: "Light Novel" },
 ]
 
-// AniList's fixed genre enum — single-select chip row.
+// AniList's fixed genre enum — multi-select in the Genres dropdown.
 const GENRES = [
   "Action", "Adventure", "Comedy", "Drama", "Ecchi", "Fantasy", "Horror",
   "Mahou Shoujo", "Mecha", "Music", "Mystery", "Psychological", "Romance",
   "Sci-Fi", "Slice of Life", "Sports", "Supernatural", "Thriller",
+]
+
+// Popular AniList content tags for quick picking — free-text covers the rest.
+const POPULAR_TAGS = [
+  "Time Loop", "Isekai", "School", "Vampires", "Zombies", "Cultivation",
+  "Survival", "Revenge", "Office Lady", "Cooking", "Ghosts", "Memory Loss",
+  "Body Swapping", "Battle Royale", "Archery", "Boxing", "Idol", "Trains",
 ]
 
 export function ExplorePageInner() {
@@ -35,6 +42,9 @@ export function ExplorePageInner() {
   const [genre, setGenre] = useState<string[]>([])
   const [genreOpen, setGenreOpen] = useState(false)
   const genreRef = useRef<HTMLDivElement>(null)
+  const [tag, setTag] = useState<string | null>(null)
+  const [tagOpen, setTagOpen] = useState(false)
+  const tagRef = useRef<HTMLDivElement>(null)
   const [items, setItems] = useState<ExploreItem[]>([])
   const [loading, setLoading] = useState(true)
   const [hasNext, setHasNext] = useState(false)
@@ -45,6 +55,7 @@ export function ExplorePageInner() {
     const params = new URLSearchParams({ type, page: String(page) })
     if (query) params.set("search", query)
     genre.forEach((g) => params.append("genre", g))
+    if (tag) params.set("tag", tag)
     fetch(`/api/explore?${params}`)
       .then((r) => r.json())
       .then((data) => {
@@ -59,19 +70,21 @@ export function ExplorePageInner() {
     return () => {
       alive = false
     }
-  }, [type, page, query, genre])
+  }, [type, page, query, genre, tag])
 
-  // Close the genre dropdown when clicking outside of it.
+  // Close either dropdown when clicking outside of it.
   useEffect(() => {
-    if (!genreOpen) return
     const onDown = (e: MouseEvent) => {
-      if (genreRef.current && !genreRef.current.contains(e.target as Node)) {
+      if (genreOpen && genreRef.current && !genreRef.current.contains(e.target as Node)) {
         setGenreOpen(false)
+      }
+      if (tagOpen && tagRef.current && !tagRef.current.contains(e.target as Node)) {
+        setTagOpen(false)
       }
     }
     document.addEventListener("mousedown", onDown)
     return () => document.removeEventListener("mousedown", onDown)
-  }, [genreOpen])
+  }, [genreOpen, tagOpen])
 
   const toggleGenre = (g: string) =>
     setGenre((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]))
@@ -147,6 +160,65 @@ export function ExplorePageInner() {
                   className="mt-1 w-full rounded-md border-t border-border px-2 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-danger"
                 >
                   Clear all
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+        {/* Tag dropdown — single-select, free text + popular suggestions */}
+        <div className="relative" ref={tagRef}>
+          <button
+            onClick={() => setTagOpen((o) => !o)}
+            className={`flex items-center gap-2 rounded-lg border px-4 py-2 font-mono text-xs uppercase tracking-widest transition-colors ${
+              tag
+                ? "border-primary text-primary"
+                : "border-border text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {tag ? `Tag · ${tag}` : "Tag"}
+            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${tagOpen ? "rotate-180" : ""}`} />
+          </button>
+          {tagOpen && (
+            <div className="absolute left-0 z-20 mt-2 w-64 rounded-lg border border-border bg-surface p-2 shadow-xl">
+              <p className="px-2 pb-1 pt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                Content tag (AniList)
+              </p>
+              <Input
+                value={tag ?? ""}
+                onChange={(e) => setTag(e.target.value || null)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setPage(1)
+                    setTagOpen(false)
+                  }
+                }}
+                placeholder="Type a tag…"
+                className="mb-2 h-8 text-sm"
+              />
+              <div className="max-h-56 overflow-y-auto">
+                {POPULAR_TAGS.filter((t) => t !== tag).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => {
+                      setTag(t)
+                      setPage(1)
+                      setTagOpen(false)
+                    }}
+                    className="w-full rounded-md px-2 py-1.5 text-left text-sm text-muted-foreground transition-colors hover:bg-surface-2 hover:text-foreground"
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+              {tag && (
+                <button
+                  onClick={() => {
+                    setTag(null)
+                    setPage(1)
+                  }}
+                  className="mt-1 w-full rounded-md border-t border-border px-2 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-danger"
+                >
+                  Clear tag
                 </button>
               )}
             </div>

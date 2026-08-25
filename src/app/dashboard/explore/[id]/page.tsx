@@ -20,6 +20,7 @@ interface ExploreMedia {
   chapters: number | null
   volumes: number | null
   genres: string[]
+  tags: string[]
   status: string | null
 }
 
@@ -102,6 +103,7 @@ export default function ExploreDetailPage({ params }: { params: Promise<{ id: st
         rating: null,
         notes: null,
         genres: media.genres,
+        tags: media.tags ?? [],
         is_favorite: false,
         started_at: null,
         completed_at: null,

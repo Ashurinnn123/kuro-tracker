@@ -13,6 +13,7 @@ export interface Title {
   current_volume: number | null // light novels only
   status: ReadingStatus
   genres: string[] // auto-filled from AniList on cover/suggestion pick
+  tags: string[] // AniList content tags ("Time Loop", "School", ...) — same source
   rating: number | null // 1 to 10, one decimal (MyAnimeList style)
   notes: string | null
   is_favorite: boolean
