@@ -119,7 +119,7 @@ export default function ExploreDetailPage({ params }: { params: Promise<{ id: st
     <div className="mx-auto max-w-5xl space-y-6 pb-12">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard/explore")}>
+        <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h1 className="min-w-0 flex-1 truncate font-serif text-2xl italic tracking-tight">{media.title}</h1>

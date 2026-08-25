@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Search, Loader2, ChevronDown, Check } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { MediaType } from "@/lib/types"
@@ -35,19 +36,83 @@ const POPULAR_TAGS = [
 ]
 
 export function ExplorePageInner() {
-  const [type, setType] = useState<MediaType>("manga")
-  const [page, setPage] = useState(1)
-  const [search, setSearch] = useState("")
-  const [query, setQuery] = useState("")
-  const [genre, setGenre] = useState<string[]>([])
-  const [genreOpen, setGenreOpen] = useState(false)
-  const genreRef = useRef<HTMLDivElement>(null)
-  const [tag, setTag] = useState<string | null>(null)
-  const [tagOpen, setTagOpen] = useState(false)
-  const tagRef = useRef<HTMLDivElement>(null)
+  // All filter state lives in the URL (?type=&q=&genre=&tag=&page=) so the
+  // browser back button restores the exact browse state — no reset to defaults.
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  const rawType = searchParams.get("type") ?? "manga"
+  const type: MediaType = ["manga", "manhwa", "light_novel"].includes(rawType)
+    ? (rawType as MediaType)
+    : "manga"
+  const page = Math.max(1, Number(searchParams.get("page") ?? "1") || 1)
+  const query = searchParams.get("q") ?? ""
+  const genre = searchParams.getAll("genre")
+  const tag = searchParams.get("tag")
+
+  // Local input state only; committed to the URL on Enter / suggestion click.
+  const [search, setSearch] = useState(query)
   const [items, setItems] = useState<ExploreItem[]>([])
   const [loading, setLoading] = useState(true)
   const [hasNext, setHasNext] = useState(false)
+
+  // Genre/tag dropdowns stay component-local (transient UI, not worth a history entry).
+  const [genreOpen, setGenreOpen] = useState(false)
+  const genreRef = useRef<HTMLDivElement>(null)
+  const [tagOpen, setTagOpen] = useState(false)
+  const tagRef = useRef<HTMLDivElement>(null)
+
+  // Shallow URL update — replaces the current history entry for filter tweaks,
+  // so Back still exits the page rather than replaying every chip click.
+  const setParams = (mutate: (p: URLSearchParams) => void) => {
+    const params = new URLSearchParams(searchParams.toString())
+    mutate(params)
+    router.replace(`/dashboard/explore?${params.toString()}`, { scroll: false })
+  }
+
+  const setType = (t: MediaType) =>
+    setParams((p) => {
+      if (t === "manga") p.delete("type")
+      else p.set("type", t)
+      p.delete("page")
+    })
+
+  const toggleGenre = (g: string) =>
+    setParams((p) => {
+      const next = p.getAll("genre").includes(g)
+        ? p.getAll("genre").filter((x) => x !== g)
+        : [...p.getAll("genre"), g]
+      p.delete("genre")
+      next.forEach((x) => p.append("genre", x))
+      p.delete("page")
+    })
+
+  const clearGenres = () =>
+    setParams((p) => {
+      p.delete("genre")
+      p.delete("page")
+    })
+
+  const setTag = (t: string | null) =>
+    setParams((p) => {
+      if (t) p.set("tag", t)
+      else p.delete("tag")
+      p.delete("page")
+    })
+
+  const commitSearch = () => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete("page")
+    if (search.trim()) params.set("q", search.trim())
+    else params.delete("q")
+    router.push(`/dashboard/explore?${params.toString()}`, { scroll: false })
+  }
+
+  const setPage = (n: number) =>
+    setParams((p) => {
+      if (n <= 1) p.delete("page")
+      else p.set("page", String(n))
+    })
 
   useEffect(() => {
     let alive = true
@@ -70,7 +135,7 @@ export function ExplorePageInner() {
     return () => {
       alive = false
     }
-  }, [type, page, query, genre, tag])
+  }, [type, page, query, genre.join("|"), tag])
 
   // Close either dropdown when clicking outside of it.
   useEffect(() => {
@@ -86,25 +151,19 @@ export function ExplorePageInner() {
     return () => document.removeEventListener("mousedown", onDown)
   }, [genreOpen, tagOpen])
 
-  const toggleGenre = (g: string) =>
-    setGenre((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]))
-
   return (
     <div className="space-y-6 pb-12">
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold tracking-tight">Explore</h1>
       </div>
 
-      {/* Type tabs + search */}
+      {/* Type tabs + filters + search */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex rounded-lg border border-border p-0.5">
           {TABS.map((t) => (
             <button
               key={t.key}
-              onClick={() => {
-                setType(t.key)
-                setPage(1)
-              }}
+              onClick={() => setType(t.key)}
               className={`rounded-md px-4 py-1.5 font-mono text-xs uppercase tracking-widest transition-colors ${
                 type === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
@@ -137,10 +196,7 @@ export function ExplorePageInner() {
                   return (
                     <button
                       key={g}
-                      onClick={() => {
-                        toggleGenre(g)
-                        setPage(1)
-                      }}
+                      onClick={() => toggleGenre(g)}
                       className={`flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
                         active ? "text-primary" : "text-muted-foreground hover:bg-surface-2 hover:text-foreground"
                       }`}
@@ -153,10 +209,7 @@ export function ExplorePageInner() {
               </div>
               {genre.length > 0 && (
                 <button
-                  onClick={() => {
-                    setGenre([])
-                    setPage(1)
-                  }}
+                  onClick={clearGenres}
                   className="mt-1 w-full rounded-md border-t border-border px-2 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-danger"
                 >
                   Clear all
@@ -186,12 +239,6 @@ export function ExplorePageInner() {
               <Input
                 value={tag ?? ""}
                 onChange={(e) => setTag(e.target.value || null)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setPage(1)
-                    setTagOpen(false)
-                  }
-                }}
                 placeholder="Type a tag…"
                 className="mb-2 h-8 text-sm"
               />
@@ -199,11 +246,7 @@ export function ExplorePageInner() {
                 {POPULAR_TAGS.filter((t) => t !== tag).map((t) => (
                   <button
                     key={t}
-                    onClick={() => {
-                      setTag(t)
-                      setPage(1)
-                      setTagOpen(false)
-                    }}
+                    onClick={() => setTag(t)}
                     className="w-full rounded-md px-2 py-1.5 text-left text-sm text-muted-foreground transition-colors hover:bg-surface-2 hover:text-foreground"
                   >
                     {t}
@@ -212,10 +255,7 @@ export function ExplorePageInner() {
               </div>
               {tag && (
                 <button
-                  onClick={() => {
-                    setTag(null)
-                    setPage(1)
-                  }}
+                  onClick={() => setTag(null)}
                   className="mt-1 w-full rounded-md border-t border-border px-2 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-danger"
                 >
                   Clear tag
@@ -230,10 +270,7 @@ export function ExplorePageInner() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                setQuery(search.trim())
-                setPage(1)
-              }
+              if (e.key === "Enter") commitSearch()
             }}
             placeholder="Search titles… (Enter)"
             className="pl-9"
@@ -276,7 +313,7 @@ export function ExplorePageInner() {
         <div className="flex items-center justify-center gap-3 pt-2">
           <button
             disabled={page <= 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            onClick={() => setPage(page - 1)}
             className="rounded-md border border-border px-3 py-1.5 font-mono text-xs uppercase tracking-widest disabled:opacity-40 hover:bg-surface-2"
           >
             Prev
@@ -284,7 +321,7 @@ export function ExplorePageInner() {
           <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Page {page}</span>
           <button
             disabled={!hasNext}
-            onClick={() => setPage((p) => p + 1)}
+            onClick={() => setPage(page + 1)}
             className="rounded-md border border-border px-3 py-1.5 font-mono text-xs uppercase tracking-widest disabled:opacity-40 hover:bg-surface-2"
           >
             Next
