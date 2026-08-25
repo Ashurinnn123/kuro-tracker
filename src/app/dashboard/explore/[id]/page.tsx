@@ -148,7 +148,7 @@ export default function ExploreDetailPage({ params }: { params: Promise<{ id: st
           </div>
         )}
         <div className={`flex flex-col gap-5 p-5 sm:flex-row ${media.bannerUrl ? "" : "pt-6"}`}>
-          <div className={`w-32 shrink-0 self-start overflow-hidden rounded-lg border border-border/70 bg-background ${media.bannerUrl ? "-mt-16 shadow-xl" : ""}`}>
+          <div className="w-32 shrink-0 self-start overflow-hidden rounded-lg border border-border/70 bg-background">
             {/* eslint-disable-next-line @next/next/no-img-element -- external CDN cover */}
             <img src={media.imageUrl} alt={media.title} className="aspect-[2/3] w-full object-cover" />
           </div>
