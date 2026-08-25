@@ -1,26 +1,132 @@
 @import "tailwindcss";
 
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Brand pages (landing + auth) are always dark regardless of app theme.
+   html:where(.theme-dark) beats the later :root rule (same origin, later wins at equal specificity). */
+html:has(.theme-dark) {
+  /* Stitch palette */
+  --background: #0c1321;
+  --foreground: #dce2f6;
+  --surface: #19202e;
+  --surface-foreground: #dce2f6;
+  --surface-2: #2e3544;
+  --border: #414751;
+  --primary: #60a5fa;
+  --primary-strong: #a4c9ff;
+  --primary-foreground: #00315d;
+  --sidebar: #070e1c;
+  --sidebar-foreground: #dce2f6;
+  --sidebar-active: #232a39;
+  --danger: #ffb4ab;
+  --danger-foreground: #690005;
+  --muted: #151b2a;
+  --muted-foreground: #c1c7d3;
+  --accent: #232a39;
+  --accent-foreground: #dce2f6;
+  --gold: #fabd34;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f0f4f8;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-foreground: #0f172a;
+  --surface-2: #f1f5f9;
+  --border: #cbd5e1;
+  --primary: #2563eb;
+  --primary-strong: #2563eb;
+  --primary-foreground: #ffffff;
+  --sidebar: #061935;
+  --sidebar-foreground: #e2e8f0;
+  --sidebar-active: #0f2c59;
+  --danger: #ef4444;
+  --danger-foreground: #ffffff;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+  --accent: #dbeafe;
+  --accent-foreground: #1e3a8a;
+  --gold: #b45309;
+  --radius: 0.75rem;
+}
+
+.dark {
+  /* Stitch palette (dashboard dark = brand dark, one system) */
+  --background: #0c1321;
+  --foreground: #dce2f6;
+  --surface: #19202e;
+  --surface-foreground: #dce2f6;
+  --surface-2: #2e3544;
+  --border: #414751;
+  --primary: #60a5fa;
+  --primary-strong: #a4c9ff;
+  --primary-foreground: #00315d;
+  --sidebar: #090e17;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-active: #1e293b;
+  --danger: #f87171;
+  --danger-foreground: #ffffff;
+  --muted: #0f172a;
+  --muted-foreground: #94a3b8;
+  --accent: #1e293b;
+  --accent-foreground: #f8fafc;
+  --gold: #fbbf24;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-gold: var(--gold);
+  --radius-xl: var(--radius);
+  --radius-lg: calc(var(--radius) - 2px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-sm: calc(var(--radius) - 6px);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-mono: var(--font-jetbrains);
+  --font-serif: var(--font-literata);
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Manga-panel motifs (Stitch) */
+@utility halftone-bg {
+  background-image: radial-gradient(circle, #334155 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+@utility speed-lines {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgb(96 165 250 / 0.08) 10px,
+    rgb(96 165 250 / 0.08) 11px
+  );
+}
+
+@utility text-glow {
+  text-shadow: 0 0 12px rgb(96 165 250 / 0.45);
 }
