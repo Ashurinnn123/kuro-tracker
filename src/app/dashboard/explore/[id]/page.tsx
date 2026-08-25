@@ -192,9 +192,9 @@ export default function ExploreDetailPage({ params }: { params: Promise<{ id: st
                 href={`/dashboard/explore/${rel.id}`}
                 className="group overflow-hidden rounded-lg border border-border bg-surface transition-transform hover:-translate-y-0.5"
               >
-                <div className="aspect-[2/3] w-full overflow-hidden bg-background">
+                <div className="overflow-hidden bg-background">
                   {/* eslint-disable-next-line @next/next/no-img-element -- external CDN cover */}
-                  <img src={rel.imageUrl} alt={rel.title} loading="lazy" className="w-full h-full object-cover" />
+                  <img src={rel.imageUrl} alt={rel.title} loading="lazy" className="w-full h-auto" />
                 </div>
                 <div className="p-2">
                   <p className="truncate text-xs font-medium">{rel.title}</p>
@@ -219,9 +219,9 @@ export default function ExploreDetailPage({ params }: { params: Promise<{ id: st
                 href={`/dashboard/explore/${rec.id}`}
                 className="group overflow-hidden rounded-lg border border-border bg-surface transition-transform hover:-translate-y-0.5"
               >
-                <div className="aspect-[2/3] w-full overflow-hidden bg-background">
+                <div className="overflow-hidden bg-background">
                   {/* eslint-disable-next-line @next/next/no-img-element -- external CDN cover */}
-                  <img src={rec.imageUrl} alt={rec.title} loading="lazy" className="w-full h-full object-cover" />
+                  <img src={rec.imageUrl} alt={rec.title} loading="lazy" className="w-full h-auto" />
                 </div>
                 <div className="p-2">
                   <p className="truncate text-xs font-medium">{rec.title}</p>
