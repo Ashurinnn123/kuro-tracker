@@ -24,7 +24,8 @@ export async function GET(request: NextRequest) {
   }
   const page = Number(sp.get("page") ?? "1")
   const search = sp.get("search")?.slice(0, 80) || undefined
+  const genre = sp.get("genre")?.slice(0, 40) || undefined
 
-  const items = await exploreList(type, page, search)
+  const items = await exploreList(type, page, search, genre)
   return NextResponse.json({ items })
 }

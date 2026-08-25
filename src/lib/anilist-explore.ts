@@ -43,17 +43,19 @@ function mapMedia(item: RawMedia) {
   }
 }
 
-export async function exploreList(mediaType: MediaType, page: number, search?: string) {
+export async function exploreList(mediaType: MediaType, page: number, search?: string, genre?: string) {
   if (!Number.isInteger(page) || page < 1 || page > 10) throw new Error("bad page")
   const filter = FILTERS[mediaType] || FILTERS.manga
   const sort = search ? "" : ",sort:TRENDING_DESC"
+  // genre_in is AND-composed; single value keeps it predictable.
+  const genreFilter = genre ? `,genre_in:[${JSON.stringify(genre)}]` : ""
   try {
     const res = await fetch("https://graphql.anilist.co", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: AbortSignal.timeout(12000),
       body: JSON.stringify({
-        query: `query($s:String,$p:Int){Page(perPage:24,page:$p){media(search:$s,type:MANGA,isAdult:false,${filter}${sort}){id title{romaji english} coverImage{large} description(asHtml:false) averageScore format chapters volumes genres status}}}`,
+        query: `query($s:String,$p:Int){Page(perPage:24,page:$p){media(search:$s,type:MANGA,isAdult:false,${filter}${sort}${genreFilter}){id title{romaji english} coverImage{large} description(asHtml:false) averageScore format chapters volumes genres status}}}`,
         variables: { s: search?.trim() || null, p: page },
       }),
     })

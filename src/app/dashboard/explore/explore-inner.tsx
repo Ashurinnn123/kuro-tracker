@@ -20,11 +20,19 @@ const TABS: { key: MediaType; label: string }[] = [
   { key: "light_novel", label: "Light Novel" },
 ]
 
+// AniList's fixed genre enum — single-select chip row.
+const GENRES = [
+  "Action", "Adventure", "Comedy", "Drama", "Ecchi", "Fantasy", "Horror",
+  "Mahou Shoujo", "Mecha", "Music", "Mystery", "Psychological", "Romance",
+  "Sci-Fi", "Slice of Life", "Sports", "Supernatural", "Thriller",
+]
+
 export function ExplorePageInner() {
   const [type, setType] = useState<MediaType>("manga")
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
   const [query, setQuery] = useState("")
+  const [genre, setGenre] = useState<string | null>(null)
   const [items, setItems] = useState<ExploreItem[]>([])
   const [loading, setLoading] = useState(true)
   const [hasNext, setHasNext] = useState(false)
@@ -34,6 +42,7 @@ export function ExplorePageInner() {
     setLoading(true)
     const params = new URLSearchParams({ type, page: String(page) })
     if (query) params.set("search", query)
+    if (genre) params.set("genre", genre)
     fetch(`/api/explore?${params}`)
       .then((r) => r.json())
       .then((data) => {
@@ -48,7 +57,7 @@ export function ExplorePageInner() {
     return () => {
       alive = false
     }
-  }, [type, page, query])
+  }, [type, page, query, genre])
 
   return (
     <div className="space-y-6 pb-12">
@@ -89,6 +98,26 @@ export function ExplorePageInner() {
             className="pl-9"
           />
         </div>
+      </div>
+
+      {/* Genre filter chips — single select, tap again to clear */}
+      <div className="flex flex-wrap gap-1.5">
+        {GENRES.map((g) => (
+          <button
+            key={g}
+            onClick={() => {
+              setGenre(genre === g ? null : g)
+              setPage(1)
+            }}
+            className={`rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-widest transition-colors ${
+              genre === g
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+            }`}
+          >
+            {g}
+          </button>
+        ))}
       </div>
 
       {/* Grid */}
