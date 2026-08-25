@@ -54,7 +54,6 @@ export function ExplorePageInner() {
     <div className="space-y-6 pb-12">
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold tracking-tight">Explore</h1>
-        <p className="text-muted-foreground">Discover manga, manhwa, and light novels — powered by AniList.</p>
       </div>
 
       {/* Type tabs + search */}
