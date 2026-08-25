@@ -3,9 +3,11 @@
 
 import { MediaType } from "./types"
 
+// Tabs partition by FORMAT first (a JP light novel must not leak into the
+// manga tab), then by country for manga vs manhwa.
 const FILTERS: Record<MediaType, string> = {
-  manga: "countryOfOrigin: JP",
-  manhwa: "countryOfOrigin: KR",
+  manga: 'countryOfOrigin: JP, format_in:[MANGA,ONE_SHOT]',
+  manhwa: 'countryOfOrigin: KR, format_in:[MANGA,ONE_SHOT]',
   light_novel: "format: NOVEL",
 }
 

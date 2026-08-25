@@ -21,8 +21,8 @@ export interface CoverSearchResult {
 }
 
 const FILTERS: Record<MediaType, string> = {
-  manga: "countryOfOrigin: JP",
-  manhwa: "countryOfOrigin: KR",
+  manga: 'countryOfOrigin: JP, format_in:[MANGA,ONE_SHOT]',
+  manhwa: 'countryOfOrigin: KR, format_in:[MANGA,ONE_SHOT]',
   light_novel: "format: NOVEL",
 }
 
