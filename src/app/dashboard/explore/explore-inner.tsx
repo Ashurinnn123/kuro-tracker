@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { Search, Loader2 } from "lucide-react"
+import { Search, Loader2, ChevronDown, Check } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { MediaType } from "@/lib/types"
 
@@ -32,7 +32,9 @@ export function ExplorePageInner() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
   const [query, setQuery] = useState("")
-  const [genre, setGenre] = useState<string | null>(null)
+  const [genre, setGenre] = useState<string[]>([])
+  const [genreOpen, setGenreOpen] = useState(false)
+  const genreRef = useRef<HTMLDivElement>(null)
   const [items, setItems] = useState<ExploreItem[]>([])
   const [loading, setLoading] = useState(true)
   const [hasNext, setHasNext] = useState(false)
@@ -42,7 +44,7 @@ export function ExplorePageInner() {
     setLoading(true)
     const params = new URLSearchParams({ type, page: String(page) })
     if (query) params.set("search", query)
-    if (genre) params.set("genre", genre)
+    genre.forEach((g) => params.append("genre", g))
     fetch(`/api/explore?${params}`)
       .then((r) => r.json())
       .then((data) => {
@@ -58,6 +60,21 @@ export function ExplorePageInner() {
       alive = false
     }
   }, [type, page, query, genre])
+
+  // Close the genre dropdown when clicking outside of it.
+  useEffect(() => {
+    if (!genreOpen) return
+    const onDown = (e: MouseEvent) => {
+      if (genreRef.current && !genreRef.current.contains(e.target as Node)) {
+        setGenreOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", onDown)
+    return () => document.removeEventListener("mousedown", onDown)
+  }, [genreOpen])
+
+  const toggleGenre = (g: string) =>
+    setGenre((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]))
 
   return (
     <div className="space-y-6 pb-12">
@@ -83,6 +100,58 @@ export function ExplorePageInner() {
             </button>
           ))}
         </div>
+        {/* Genres dropdown — AniList style multi-select */}
+        <div className="relative" ref={genreRef}>
+          <button
+            onClick={() => setGenreOpen((o) => !o)}
+            className={`flex items-center gap-2 rounded-lg border px-4 py-2 font-mono text-xs uppercase tracking-widest transition-colors ${
+              genre.length > 0
+                ? "border-primary text-primary"
+                : "border-border text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Genres{genre.length > 0 && ` · ${genre.length}`}
+            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${genreOpen ? "rotate-180" : ""}`} />
+          </button>
+          {genreOpen && (
+            <div className="absolute left-0 z-20 mt-2 w-64 rounded-lg border border-border bg-surface p-2 shadow-xl">
+              <p className="px-2 pb-1 pt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                Genres
+              </p>
+              <div className="max-h-64 overflow-y-auto">
+                {GENRES.map((g) => {
+                  const active = genre.includes(g)
+                  return (
+                    <button
+                      key={g}
+                      onClick={() => {
+                        toggleGenre(g)
+                        setPage(1)
+                      }}
+                      className={`flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
+                        active ? "text-primary" : "text-muted-foreground hover:bg-surface-2 hover:text-foreground"
+                      }`}
+                    >
+                      {g}
+                      {active && <Check className="h-4 w-4" />}
+                    </button>
+                  )
+                })}
+              </div>
+              {genre.length > 0 && (
+                <button
+                  onClick={() => {
+                    setGenre([])
+                    setPage(1)
+                  }}
+                  className="mt-1 w-full rounded-md border-t border-border px-2 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-danger"
+                >
+                  Clear all
+                </button>
+              )}
+            </div>
+          )}
+        </div>
         <div className="relative ml-auto w-full max-w-xs">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -98,26 +167,6 @@ export function ExplorePageInner() {
             className="pl-9"
           />
         </div>
-      </div>
-
-      {/* Genre filter chips — single select, tap again to clear */}
-      <div className="flex flex-wrap gap-1.5">
-        {GENRES.map((g) => (
-          <button
-            key={g}
-            onClick={() => {
-              setGenre(genre === g ? null : g)
-              setPage(1)
-            }}
-            className={`rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-widest transition-colors ${
-              genre === g
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border text-muted-foreground hover:border-primary hover:text-primary"
-            }`}
-          >
-            {g}
-          </button>
-        ))}
       </div>
 
       {/* Grid */}

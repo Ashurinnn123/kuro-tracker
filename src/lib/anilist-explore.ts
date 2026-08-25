@@ -43,12 +43,15 @@ function mapMedia(item: RawMedia) {
   }
 }
 
-export async function exploreList(mediaType: MediaType, page: number, search?: string, genre?: string) {
+export async function exploreList(mediaType: MediaType, page: number, search?: string, genres?: string[]) {
   if (!Number.isInteger(page) || page < 1 || page > 10) throw new Error("bad page")
   const filter = FILTERS[mediaType] || FILTERS.manga
   const sort = search ? "" : ",sort:TRENDING_DESC"
-  // genre_in is AND-composed; single value keeps it predictable.
-  const genreFilter = genre ? `,genre_in:[${JSON.stringify(genre)}]` : ""
+  // genre_in matches ANY of the listed genres — same as AniList's filter UI.
+  const genreFilter =
+    genres && genres.length > 0
+      ? `,genre_in:[${genres.map((g) => JSON.stringify(g)).join(",")}]`
+      : ""
   try {
     const res = await fetch("https://graphql.anilist.co", {
       method: "POST",
