@@ -238,47 +238,51 @@ export default function TitleDetailPage({ params }: { params: Promise<{ id: stri
             <CardContent className="p-4 space-y-4">
               <div>
                 <label className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">Progress</label>
-                {title.media_type === "light_novel" && (
-                  <div className="flex items-center gap-2 mt-2">
-                    <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => setTitle({...title, current_volume: Math.max(0, (title.current_volume ?? 0) - 1)})}>
+                <div className="flex flex-col gap-2 mt-2">
+                  {title.media_type === "light_novel" && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono text-muted-foreground w-10 shrink-0">Vol</span>
+                      <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => setTitle({...title, current_volume: Math.max(0, (title.current_volume ?? 0) - 1)})}>
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={title.total_volumes ?? undefined}
+                        className="h-8 text-center w-16"
+                        value={title.current_volume ?? 0}
+                        onChange={(e) => {
+                          const v = parseInt(e.target.value)
+                          setTitle({...title, current_volume: isNaN(v) ? 0 : Math.max(0, v)})
+                        }}
+                      />
+                      <span className="text-sm text-muted-foreground shrink-0 w-12">/ {title.total_volumes || '?'}</span>
+                      <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => setTitle({...title, current_volume: (title.current_volume ?? 0) + 1})}>
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono text-muted-foreground w-10 shrink-0">Ch</span>
+                    <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => setTitle({...title, current_chapter: Math.max(0, title.current_chapter - 1)})}>
                       <Minus className="h-4 w-4" />
                     </Button>
                     <Input
                       type="number"
                       min={0}
-                      max={title.total_volumes ?? undefined}
-                      className="h-8 text-center"
-                      value={title.current_volume ?? 0}
+                      max={title.total_chapters ?? undefined}
+                      className="h-8 text-center w-16"
+                      value={title.current_chapter}
                       onChange={(e) => {
                         const v = parseInt(e.target.value)
-                        setTitle({...title, current_volume: isNaN(v) ? 0 : Math.max(0, v)})
+                        setTitle({...title, current_chapter: isNaN(v) ? 0 : Math.max(0, v)})
                       }}
                     />
-                    <span className="text-sm text-muted-foreground shrink-0">/ {title.total_volumes || '?'} vol</span>
-                    <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => setTitle({...title, current_volume: (title.current_volume ?? 0) + 1})}>
+                    <span className="text-sm text-muted-foreground shrink-0 w-12">/ {title.total_chapters || '?'}</span>
+                    <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => setTitle({...title, current_chapter: title.current_chapter + 1})}>
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
-                )}
-                <div className="flex items-center gap-2 mt-1">
-                  <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => setTitle({...title, current_chapter: Math.max(0, title.current_chapter - 1)})}>
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={title.total_chapters ?? undefined}
-                    className="h-8 text-center"
-                    value={title.current_chapter}
-                    onChange={(e) => {
-                      const v = parseInt(e.target.value)
-                      setTitle({...title, current_chapter: isNaN(v) ? 0 : Math.max(0, v)})
-                    }}
-                  />
-                  <span className="text-sm text-muted-foreground shrink-0">/ {title.total_chapters || '?'}</span>
-                  <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => setTitle({...title, current_chapter: title.current_chapter + 1})}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
                 </div>
               </div>
 
