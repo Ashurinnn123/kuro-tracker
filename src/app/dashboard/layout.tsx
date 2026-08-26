@@ -14,9 +14,9 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       {/* Sidebar for desktop */}
-      <Sidebar />
+      <Sidebar className="hidden lg:flex" />
       
-      {/* Mobile sidebar overlay (simple placeholder for now) */}
+      {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
           <div 
@@ -24,7 +24,7 @@ export default function DashboardLayout({
             onClick={() => setSidebarOpen(false)}
           />
           <div className="relative flex w-full max-w-xs flex-1">
-            <Sidebar />
+            <Sidebar className="w-full" onLinkClick={() => setSidebarOpen(false)} />
           </div>
         </div>
       )}

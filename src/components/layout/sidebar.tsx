@@ -12,13 +12,13 @@ const navItems = [
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
 
-export function Sidebar() {
+export function Sidebar({ className, onLinkClick }: { className?: string; onLinkClick?: () => void }) {
   const pathname = usePathname()
 
   return (
-    <div className="hidden shrink-0 border-r border-border/70 bg-sidebar text-sidebar-foreground lg:flex lg:w-64 lg:flex-col">
+    <div className={cn("flex shrink-0 flex-col border-r border-border/70 bg-sidebar text-sidebar-foreground lg:w-64", className)}>
       <div className="flex items-center px-6 pb-6 pt-8">
-        <Link href="/dashboard" className="flex flex-col gap-1.5">
+        <Link href="/dashboard" onClick={onLinkClick} className="flex flex-col gap-1.5">
           {/* eslint-disable-next-line @next/next/no-img-element -- static public asset */}
           <img src="/kuro-logo.jpg" alt="Kuro" className="h-14 w-14 rounded-xl" />
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
@@ -33,6 +33,7 @@ export function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onClick={onLinkClick}
               className={cn(
                 "group flex items-center gap-3 rounded-lg border-l-2 px-3 py-3 font-mono text-xs uppercase tracking-widest transition-colors",
                 isActive
