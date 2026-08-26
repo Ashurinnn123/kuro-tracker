@@ -38,21 +38,21 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="fixed bottom-0 right-0 z-50 m-4 flex flex-col gap-2 pointer-events-none w-full max-w-sm">
+      <div className="fixed bottom-0 right-0 z-50 flex flex-col gap-2 pointer-events-none p-4 w-full sm:max-w-sm">
         {toasts.map((t) => (
           <div
             key={t.id}
             className={cn(
-              "pointer-events-auto flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-4 pr-6 shadow-lg transition-all animate-in slide-in-from-bottom-5",
-              t.type === "error" 
-                ? "bg-danger text-danger-foreground border-danger" 
+              "pointer-events-auto relative flex w-full items-start justify-between gap-3 overflow-hidden rounded-md border px-4 py-3 pr-8 shadow-lg transition-all animate-in slide-in-from-bottom-5",
+              t.type === "error"
+                ? "bg-danger text-danger-foreground border-danger"
                 : "bg-surface text-foreground border-border"
             )}
           >
-            <p className="text-sm font-semibold">{t.message}</p>
+            <p className="text-sm font-semibold leading-snug break-words min-w-0">{t.message}</p>
             <button
               onClick={() => removeToast(t.id)}
-              className="absolute right-2 top-2 rounded-md p-1 opacity-50 hover:opacity-100 transition-opacity"
+              className="absolute right-2 top-2 rounded-md p-1 opacity-50 hover:opacity-100 transition-opacity shrink-0"
             >
               <X className="h-4 w-4" />
             </button>
