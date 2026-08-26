@@ -226,7 +226,7 @@ export default function TitleDetailPage({ params }: { params: Promise<{ id: stri
           {/* Tags — read-only, smaller, auto-filled from AniList */}
           {(title.tags?.length ?? 0) > 0 && (
             <div className="flex flex-wrap gap-1 px-1">
-              {title.tags.map((t) => (
+              {title.tags.slice(0, 8).map((t) => (
                 <span key={t} className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
                   {t}
                 </span>
