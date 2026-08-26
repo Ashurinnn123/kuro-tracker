@@ -18,6 +18,7 @@ export interface CoverSearchResult {
   volumes: number | null
   genres: string[]
   tags: string[]
+  countryOfOrigin?: string | null
 }
 
 const FILTERS: Record<MediaType, string> = {
@@ -60,6 +61,7 @@ export async function searchCovers(
       volumes: item.volumes ?? null,
       genres: (item.genres ?? []) as string[],
       tags: ((item.tags ?? []) as { name: string }[]).map((t) => t.name),
+      countryOfOrigin: item.countryOfOrigin ?? null,
     }))
 
     return results.filter((r) => r.imageUrl)

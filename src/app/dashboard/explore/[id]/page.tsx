@@ -22,6 +22,7 @@ interface ExploreMedia {
   genres: string[]
   tags: string[]
   status: string | null
+  countryOfOrigin?: string | null
 }
 
 interface Detail extends ExploreMedia {
@@ -36,11 +37,10 @@ const RELATION_LABEL: Record<string, string> = {
   SPIN_OFF: "Spin-off",
 }
 
-// Map AniList format → Kuro media type for the Add flow.
+// Map AniList format/country → Kuro media type for the Add flow.
 function inferMediaType(m: ExploreMedia): MediaType {
   if (m.format === "NOVEL") return "light_novel"
-  // Detail page knows its own tab type via genres? Not reliably — manhwa is
-  // country-based. ponytail: KR covers usually tagged; fall back to manga.
+  if (m.countryOfOrigin === "KR" || m.countryOfOrigin === "CN") return "manhwa"
   return "manga"
 }
 

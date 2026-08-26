@@ -24,6 +24,7 @@ interface RawMedia {
   genres: string[] | null
   tags: { name: string }[] | null
   status: string | null
+  countryOfOrigin?: string | null
 }
 
 function mapMedia(item: RawMedia) {
@@ -44,6 +45,7 @@ function mapMedia(item: RawMedia) {
     genres: item.genres ?? [],
     tags: (item.tags ?? []).map((t) => t.name),
     status: item.status,
+    countryOfOrigin: item.countryOfOrigin ?? null,
   }
 }
 
@@ -63,6 +65,7 @@ export async function exploreList(mediaType: MediaType, page: number, search?: s
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: AbortSignal.timeout(12000),
+      next: { revalidate: 900 }, // cache browse results for 15 min
       body: JSON.stringify({
         query: `query($s:String,$p:Int){Page(perPage:24,page:$p){media(search:$s,type:MANGA,isAdult:false,${filter}${sort}${genreFilter}${tagFilter}){id title{romaji english} coverImage{large} description(asHtml:false) averageScore format chapters volumes genres tags{name} status}}}`,
         variables: { s: search?.trim() || null, p: page },
@@ -83,10 +86,11 @@ export async function exploreDetail(anilistId: number) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: AbortSignal.timeout(12000),
+      next: { revalidate: 3600 }, // detail pages barely change — cache 1 hour
       body: JSON.stringify({
         query: `query($id:Int){Media(id:$id,type:MANGA){
           id title{romaji english} coverImage{large} bannerImage description(asHtml:false)
-          averageScore format chapters volumes genres tags{name} status
+          averageScore format chapters volumes genres tags{name} status countryOfOrigin
           recommendations(perPage:8){nodes{mediaRecommendation{id title{romaji english} coverImage{large} averageScore format}}}
           relations{edges{relationType(version:2) node{id type title{romaji english} coverImage{large} format}}}
         }}`,

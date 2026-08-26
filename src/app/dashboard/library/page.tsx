@@ -17,12 +17,13 @@ function LibraryContent() {
   const searchParams = useSearchParams()
   const { toast } = useToast()
 
-  // One-time backfill: old titles (added before the genres feature) have empty
-  // genre arrays. Look each up on AniList once and persist the genres.
+  // One-time backfill: old titles (added before the genres/tags feature) have
+  // empty arrays. Look each up on AniList once and persist genres + tags +
+  // corrected media_type (old manhwa entries may have been saved as manga).
   const backfilledRef = useRef(false)
   useEffect(() => {
     if (backfilledRef.current || isLoading || titles.length === 0) return
-    const missing = titles.filter((t) => !t.genres || t.genres.length === 0)
+    const missing = titles.filter((t) => !t.genres || t.genres.length === 0 || !t.tags || t.tags.length === 0)
     backfilledRef.current = true
     if (missing.length === 0) return
     ;(async () => {
@@ -33,7 +34,19 @@ function LibraryContent() {
           // exact-title match first, else first result
           const hit = data.find((r) => r.title.toLowerCase() === t.title.toLowerCase()) ?? data[0]
           if (hit?.genres?.length) {
-            await updateTitle(t.id, { genres: hit.genres }, { silent: true })
+            // Trust AniList's format/country over what was stored — old adds
+            // predate the manhwa detection fix.
+            const mediaType =
+              hit.type === "Light Novel"
+                ? "light_novel"
+                : hit.countryOfOrigin === "KR" || hit.countryOfOrigin === "CN"
+                  ? "manhwa"
+                  : t.media_type
+            await updateTitle(
+              t.id,
+              { genres: hit.genres, tags: hit.tags?.length ? hit.tags : t.tags ?? [], media_type: mediaType },
+              { silent: true }
+            )
             filled++
           }
         } catch {
@@ -42,7 +55,7 @@ function LibraryContent() {
       }
       if (filled > 0) {
         await refreshTitles()
-        toast(`${filled} title${filled > 1 ? "s" : ""} got genres from AniList`)
+        toast(`${filled} title${filled > 1 ? "s" : ""} got genres & tags from AniList`)
       }
     })()
   }, [titles, isLoading, updateTitle, refreshTitles])

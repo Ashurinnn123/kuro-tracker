@@ -1,0 +1,13 @@
+{
+  "name": "Kuro — Reading Tracker",
+  "short_name": "Kuro",
+  "description": "A distraction-free home for everything you read: manga, manhwa, and light novels.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0C1321",
+  "theme_color": "#0C1321",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
