@@ -47,13 +47,18 @@ function mapMedia(item: RawMedia) {
       .map((t) => t.name)
       .filter((name) => {
         const n = name.toLowerCase()
-        // Filter out meta format/technical tags and sensitive/unnecessary tags
-        return !([
+        // Filter out highly specific tropes, controversial, meta, and adult/sensitive tags.
+        const blocked = [
           "heterosexual", "bisexual", "homosexual", "lgbtq+ themes",
           "long strip", "cgi", "full color", "primarily female cast",
-          "primarily male cast", "primarily child cast", "primarily teen cast"
-        ].includes(n))
-      }),
+          "primarily male cast", "primarily child cast", "primarily teen cast",
+          "slavery", "polyamorous", "female harem", "male harem", "harem",
+          "nudity", "incest", "gore", "bdsm", "crossdressing", "nekomimi",
+          "meta", "otaku culture", "language barrier", "matriarchy", "patriarchy"
+        ]
+        return !blocked.includes(n)
+      })
+      .slice(0, 8), // cap at 8 most relevant tags
     status: item.status,
     countryOfOrigin: item.countryOfOrigin ?? null,
   }
