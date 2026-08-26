@@ -43,7 +43,17 @@ function mapMedia(item: RawMedia) {
     chapters: item.chapters,
     volumes: item.volumes,
     genres: item.genres ?? [],
-    tags: (item.tags ?? []).map((t) => t.name),
+    tags: (item.tags ?? [])
+      .map((t) => t.name)
+      .filter((name) => {
+        const n = name.toLowerCase()
+        // Filter out meta format/technical tags and sensitive/unnecessary tags
+        return !([
+          "heterosexual", "bisexual", "homosexual", "lgbtq+ themes",
+          "long strip", "cgi", "full color", "primarily female cast",
+          "primarily male cast", "primarily child cast", "primarily teen cast"
+        ].includes(n))
+      }),
     status: item.status,
     countryOfOrigin: item.countryOfOrigin ?? null,
   }

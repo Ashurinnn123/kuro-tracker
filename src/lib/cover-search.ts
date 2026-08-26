@@ -60,7 +60,16 @@ export async function searchCovers(
       chapters: item.chapters ?? null,
       volumes: item.volumes ?? null,
       genres: (item.genres ?? []) as string[],
-      tags: ((item.tags ?? []) as { name: string }[]).map((t) => t.name),
+      tags: ((item.tags ?? []) as { name: string }[])
+        .map((t) => t.name)
+        .filter((name) => {
+          const n = name.toLowerCase()
+          return ![
+            "heterosexual", "bisexual", "homosexual", "lgbtq+ themes",
+            "long strip", "cgi", "full color", "primarily female cast",
+            "primarily male cast", "primarily child cast", "primarily teen cast"
+          ].includes(n)
+        }),
       countryOfOrigin: item.countryOfOrigin ?? null,
     }))
 
