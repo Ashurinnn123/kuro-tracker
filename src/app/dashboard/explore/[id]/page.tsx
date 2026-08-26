@@ -167,9 +167,26 @@ export default function ExploreDetailPage({ params }: { params: Promise<{ id: st
             {media.genres.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {media.genres.map((g) => (
-                  <span key={g} className="rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground">
+                  <Link
+                    key={g}
+                    href={`/dashboard/explore?type=${inferred}&genre=${encodeURIComponent(g)}`}
+                    className="rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                  >
                     {g}
-                  </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+            {media.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {media.tags.slice(0, 8).map((t) => (
+                  <Link
+                    key={t}
+                    href={`/dashboard/explore?type=${inferred}&tag=${encodeURIComponent(t)}`}
+                    className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-colors hover:bg-primary/20 hover:text-primary"
+                  >
+                    {t}
+                  </Link>
                 ))}
               </div>
             )}

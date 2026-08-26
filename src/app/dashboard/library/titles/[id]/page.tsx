@@ -1,6 +1,7 @@
 "use client"
 
 import { use, useState, useEffect, useRef } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Trash2, Heart, Plus, Minus, Save, Loader2, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -212,24 +213,32 @@ export default function TitleDetailPage({ params }: { params: Promise<{ id: stri
             </div>
           </Card>
 
-          {/* Genres — read-only chips, auto-filled from AniList */}
+          {/* Genres — clickable chips, filter explore */}
           {title.genres?.length > 0 && (
             <div className="flex flex-wrap gap-1.5 px-1">
               {title.genres.map((g) => (
-                <span key={g} className="rounded-full border border-border bg-surface px-2.5 py-0.5 text-xs text-muted-foreground">
+                <Link
+                  key={g}
+                  href={`/dashboard/explore?type=${title.media_type}&genre=${encodeURIComponent(g)}`}
+                  className="rounded-full border border-border bg-surface px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                >
                   {g}
-                </span>
+                </Link>
               ))}
             </div>
           )}
 
-          {/* Tags — read-only, smaller, auto-filled from AniList */}
+          {/* Tags — clickable chips, filter explore */}
           {(title.tags?.length ?? 0) > 0 && (
             <div className="flex flex-wrap gap-1 px-1">
               {title.tags.slice(0, 8).map((t) => (
-                <span key={t} className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                <Link
+                  key={t}
+                  href={`/dashboard/explore?type=${title.media_type}&tag=${encodeURIComponent(t)}`}
+                  className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-colors hover:bg-primary/20 hover:text-primary"
+                >
                   {t}
-                </span>
+                </Link>
               ))}
             </div>
           )}
