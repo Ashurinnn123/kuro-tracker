@@ -18,7 +18,7 @@ export default function DashboardPage() {
   const totalChapters = titles.reduce((acc, t) => acc + t.current_chapter, 0)
 
   const continueReading = [...reading].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-  const recentlyUpdated = [...titles].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()).slice(0, 4)
+  const recentlyUpdated = [...titles].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()).slice(0, 6)
 
   const handleBumpChapter = async (e: React.MouseEvent, id: string) => {
     e.preventDefault()
