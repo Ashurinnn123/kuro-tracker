@@ -24,8 +24,8 @@ const TABS: { key: MediaType; label: string }[] = [
 // AniList's fixed genre enum — multi-select in the Genres dropdown.
 const GENRES = [
   "Action", "Adventure", "Comedy", "Drama", "Ecchi", "Fantasy", "Horror",
-  "Mahou Shoujo", "Mecha", "Music", "Mystery", "Psychological", "Romance",
-  "Sci-Fi", "Slice of Life", "Sports", "Supernatural", "Thriller", "School",
+  "Mecha", "Music", "Mystery", "Psychological", "Romance",
+  "Sci-Fi", "Slice of Life", "Sports", "Supernatural", "Thriller",
 ]
 
 // Popular AniList content tags for quick picking — free-text covers the rest.
