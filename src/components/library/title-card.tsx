@@ -50,6 +50,21 @@ export function TitleCard({ title }: { title: Title }) {
               <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                 {title.media_type.replace('_', ' ')}
               </p>
+              {/* Genres + tags snippet */}
+              {((title.genres?.length ?? 0) > 0 || (title.tags?.length ?? 0) > 0) && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {title.genres?.slice(0, 2).map((g) => (
+                    <span key={g} className="rounded-full border border-border/50 px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider text-muted-foreground">
+                      {g}
+                    </span>
+                  ))}
+                  {title.tags?.slice(0, 1).map((t) => (
+                    <span key={t} className="rounded bg-surface-2 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-muted-foreground">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="mt-auto space-y-2">
               <RatingStars rating={title.rating} />
