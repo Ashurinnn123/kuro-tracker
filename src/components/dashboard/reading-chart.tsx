@@ -84,7 +84,7 @@ export function ReadingChart() {
 
       <CardContent className="pt-2">
         {!hasData ? (
-          <div className="flex h-[240px] flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-background/40 px-6 text-center">
+          <div className="flex h-[220px] sm:h-[260px] flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-background/40 px-6 text-center">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
               <Layers className="h-5 w-5 text-muted-foreground" />
             </div>
@@ -94,9 +94,9 @@ export function ReadingChart() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-[300px_1fr] items-center">
-            {/* Donut */}
-            <div className="relative h-[240px] w-full">
+          <div className="grid gap-6 md:grid-cols-[340px_1fr] lg:gap-8 items-center">
+            {/* Donut - responsive height + percent radii biar gede di desktop, compact di HP */}
+            <div className="relative h-[220px] w-full sm:h-[280px] lg:h-[320px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -105,8 +105,8 @@ export function ReadingChart() {
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    innerRadius={74}
-                    outerRadius={102}
+                    innerRadius="62%"
+                    outerRadius="92%"
                     paddingAngle={activeData.length > 1 ? 3 : 0}
                     cornerRadius={8}
                     stroke="none"
@@ -121,10 +121,10 @@ export function ReadingChart() {
                 </PieChart>
               </ResponsiveContainer>
 
-              {/* Center label */}
+              {/* Center label - scale responsive */}
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-[28px] font-bold leading-none tracking-tight tabular-nums">{total}</span>
-                <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Titles</span>
+                <span className="text-[26px] font-bold leading-none tracking-tight tabular-nums sm:text-[32px] lg:text-[36px]">{total}</span>
+                <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground sm:text-[11px]">Titles</span>
                 <span className="mt-2 hidden h-px w-8 bg-border sm:block" />
                 <span className="mt-2 hidden font-mono text-[10px] text-muted-foreground sm:block">
                   {data.find((d) => d.count === Math.max(...data.map((x) => x.count)))?.name ?? "-"} top
