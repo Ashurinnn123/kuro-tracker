@@ -122,31 +122,31 @@ export function ReadingChart() {
               </ResponsiveContainer>
 
               {/* Center label - scale responsive */}
-              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-[26px] font-bold leading-none tracking-tight tabular-nums sm:text-[32px] lg:text-[36px]">{total}</span>
-                <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground sm:text-[11px]">Titles</span>
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-2 text-center">
+                <span className="text-[22px] font-bold leading-none tracking-tight tabular-nums sm:text-[30px] lg:text-[34px]">{total}</span>
+                <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground sm:text-[11px]">Titles</span>
                 <span className="mt-2 hidden h-px w-8 bg-border sm:block" />
-                <span className="mt-2 hidden font-mono text-[10px] text-muted-foreground sm:block">
+                <span className="mt-2 hidden max-w-[12ch] truncate font-mono text-[10px] text-muted-foreground sm:block">
                   {data.find((d) => d.count === Math.max(...data.map((x) => x.count)))?.name ?? "-"} top
                 </span>
               </div>
             </div>
 
             {/* Legend + mini bars */}
-            <div className="space-y-3.5 py-1">
+            <div className="min-w-0 space-y-3 py-1">
               {data.map((d) => (
-                <div key={d.key} className="group">
-                  <div className="flex items-center gap-3">
+                <div key={d.key} className="group min-w-0">
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <span
                       className="h-2.5 w-2.5 shrink-0 rounded-full shadow-sm ring-1 ring-white/10"
                       style={{ background: d.color, opacity: d.count === 0 ? 0.35 : 1 }}
                     />
                     <span
-                      className={`flex-1 truncate text-[13px] ${d.count === 0 ? "text-muted-foreground" : "font-medium text-foreground"}`}
+                      className={`min-w-0 flex-1 truncate text-[12px] sm:text-[13px] leading-none ${d.count === 0 ? "text-muted-foreground" : "font-medium text-foreground"}`}
                     >
                       {d.name}
                     </span>
-                    <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                    <span className="shrink-0 whitespace-nowrap font-mono text-[11px] sm:text-xs tabular-nums text-muted-foreground">
                       <span className={`font-semibold ${d.count ? "text-foreground" : ""}`}>{d.count}</span>
                       <span className="mx-1 text-muted-foreground/40">·</span>
                       {d.pct}%
