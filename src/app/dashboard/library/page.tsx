@@ -161,7 +161,7 @@ function LibraryContent() {
   return (
     <>
       {/* Status tabs */}
-      <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div className="flex flex-wrap gap-1.5">
         {STATUS_TABS.map((tab) => {
           const count = statusCounts[tab.key]
           const active = statusFilter === tab.key
@@ -169,7 +169,7 @@ function LibraryContent() {
             <button
               key={tab.key}
               onClick={() => setStatusFilter(tab.key)}
-              className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+              className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                 active
                   ? "bg-primary text-primary-foreground"
                   : "bg-surface border border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
