@@ -55,6 +55,7 @@ export function ExplorePageInner() {
   const [items, setItems] = useState<ExploreItem[]>([])
   const [loading, setLoading] = useState(true)
   const [hasNext, setHasNext] = useState(false)
+  const [totalPages, setTotalPages] = useState(1)
 
   // Live suggestions while typing — mini preview cards above the grid.
   const [suggests, setSuggests] = useState<ExploreItem[]>([])
@@ -133,7 +134,10 @@ export function ExplorePageInner() {
         const next: ExploreItem[] = data.items ?? []
         setItems(next)
         // Full page = probably more; last page returns fewer than 24.
-        setHasNext(next.length >= 24)
+        const hasMore = next.length >= 24
+        setHasNext(hasMore)
+        // AniList doesn't return total, so expand totalPages as user goes deeper
+        setTotalPages((prev) => Math.max(prev, hasMore ? page + 1 : page))
       })
       .catch(() => alive && setItems([]))
       .finally(() => alive && setLoading(false))
@@ -363,23 +367,64 @@ export function ExplorePageInner() {
         </div>
       )}
 
-      {/* Pagination */}
+      {/* Pagination — WestManga style numbered */}
       {!loading && items.length > 0 && (
-        <div className="flex items-center justify-center gap-3 pt-2">
+        <div className="flex items-center justify-center gap-1 pt-4">
+          {/* Prev arrow */}
           <button
             disabled={page <= 1}
             onClick={() => setPage(page - 1)}
-            className="rounded-md border border-border px-3 py-1.5 font-mono text-xs uppercase tracking-widest disabled:opacity-40 hover:bg-surface-2"
+            className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors disabled:opacity-30 hover:bg-surface-2 hover:text-foreground"
+            aria-label="Previous page"
           >
-            Prev
+            «
           </button>
-          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Page {page}</span>
+
+          {/* Page numbers */}
+          {(() => {
+            const pages: (number | "...")[] = []
+            // Always show page 1
+            pages.push(1)
+            // Show ellipsis if gap after 1
+            if (page > 3) pages.push("...")
+            // Pages around current
+            for (let i = Math.max(2, page - 1); i <= Math.min(totalPages, page + 1); i++) {
+              if (!pages.includes(i)) pages.push(i)
+            }
+            // Ellipsis before last if gap
+            if (page < totalPages - 2 && hasNext) pages.push("...")
+            // Show last page if > 1 and hasNext implies more
+            if (totalPages > 1 && !pages.includes(totalPages)) pages.push(totalPages)
+
+            return pages.map((p, i) =>
+              p === "..." ? (
+                <span key={`dots-${i}`} className="px-1 text-muted-foreground">
+                  …
+                </span>
+              ) : (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`flex h-9 min-w-9 items-center justify-center rounded-md px-2.5 font-mono text-sm transition-colors ${
+                    p === page
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-surface-2 hover:text-foreground"
+                  }`}
+                >
+                  {p}
+                </button>
+              )
+            )
+          })()}
+
+          {/* Next arrow */}
           <button
             disabled={!hasNext}
             onClick={() => setPage(page + 1)}
-            className="rounded-md border border-border px-3 py-1.5 font-mono text-xs uppercase tracking-widest disabled:opacity-40 hover:bg-surface-2"
+            className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors disabled:opacity-30 hover:bg-surface-2 hover:text-foreground"
+            aria-label="Next page"
           >
-            Next
+            »
           </button>
         </div>
       )}
