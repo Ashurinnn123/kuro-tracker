@@ -65,6 +65,8 @@ function LibraryContent() {
   const [typeFilter, setTypeFilter] = useState<MediaType | "all">((searchParams.get("type") as any) || "all")
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "updated_desc")
   const [genreFilter, setGenreFilter] = useState<string[]>([])
+  const [page, setPage] = useState(1)
+  const PER_PAGE = 24
 
   // Genres actually present in the library, alphabetical
   const availableGenres = useMemo(() => {
@@ -148,6 +150,15 @@ function LibraryContent() {
     return result
   }, [titles, searchQuery, statusFilter, typeFilter, sortBy, genreFilter])
 
+  // Reset to page 1 whenever the result set changes
+  useEffect(() => {
+    setPage(1)
+  }, [searchQuery, statusFilter, typeFilter, sortBy, genreFilter])
+
+  const totalPages = Math.max(1, Math.ceil(filteredAndSortedTitles.length / PER_PAGE))
+  const currentPage = Math.min(page, totalPages)
+  const pagedTitles = filteredAndSortedTitles.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE)
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 mt-6">
@@ -201,14 +212,73 @@ function LibraryContent() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-            {filteredAndSortedTitles.map(title => (
+            {pagedTitles.map(title => (
               <TitleCard key={title.id} title={title} />
             ))}
           </div>
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex flex-wrap items-center justify-center gap-1 pt-6">
+          <button
+            disabled={currentPage <= 1}
+            onClick={() => setPage(currentPage - 1)}
+            className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent"
+            aria-label="Previous page"
+          >
+            &laquo;
+          </button>
+
+          {getPageList(currentPage, totalPages).map((p, i) =>
+            p === "..." ? (
+              <span key={`gap-${i}`} className="px-1.5 text-muted-foreground">
+                &hellip;
+              </span>
+            ) : (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                aria-current={p === currentPage ? "page" : undefined}
+                className={`flex h-9 min-w-9 items-center justify-center rounded-md px-2.5 font-mono text-sm transition-colors ${
+                  p === currentPage
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-surface hover:text-foreground"
+                }`}
+              >
+                {p}
+              </button>
+            )
+          )}
+
+          <button
+            disabled={currentPage >= totalPages}
+            onClick={() => setPage(currentPage + 1)}
+            className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent"
+            aria-label="Next page"
+          >
+            &raquo;
+          </button>
+        </div>
+      )}
     </>
   )
+}
+
+// First page, last page, and a window around the current one; gaps become "...".
+function getPageList(current: number, total: number): (number | "...")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  const pages = new Set<number>([1, total, current])
+  if (current - 1 > 1) pages.add(current - 1)
+  if (current + 1 < total) pages.add(current + 1)
+  const sorted = [...pages].sort((a, b) => a - b)
+  const out: (number | "...")[] = []
+  sorted.forEach((p, i) => {
+    if (i > 0 && p - sorted[i - 1] > 1) out.push("...")
+    out.push(p)
+  })
+  return out
 }
 
 export default function LibraryPage() {
