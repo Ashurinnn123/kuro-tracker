@@ -28,6 +28,7 @@ interface LibraryToolbarProps {
   genreFilter: string[]
   setGenreFilter: (g: string[]) => void
   availableGenres: string[]
+  hiddenStatusFilter?: boolean
 }
 
 export function LibraryToolbar({
@@ -36,7 +37,8 @@ export function LibraryToolbar({
   typeFilter, setTypeFilter,
   sortBy, setSortBy,
   genreFilter, setGenreFilter,
-  availableGenres
+  availableGenres,
+  hiddenStatusFilter
 }: LibraryToolbarProps) {
   const [genreOpen, setGenreOpen] = useState(false)
   const genreRef = useRef<HTMLDivElement>(null)
@@ -72,18 +74,20 @@ export function LibraryToolbar({
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-          <select
-            className="h-10 rounded-md border border-border bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
-          >
-            <option value="all">All Statuses</option>
-            <option value="reading">Reading</option>
-            <option value="completed">Completed</option>
-            <option value="want_to_read">Want to Read</option>
-            <option value="on_hold">On Hold</option>
-            <option value="dropped">Dropped</option>
-          </select>
+          {!hiddenStatusFilter && (
+            <select
+              className="h-10 rounded-md border border-border bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+            >
+              <option value="all">All Statuses</option>
+              <option value="reading">Reading</option>
+              <option value="completed">Completed</option>
+              <option value="want_to_read">Want to Read</option>
+              <option value="on_hold">On Hold</option>
+              <option value="dropped">Dropped</option>
+            </select>
+          )}
 
           <select
             className="h-10 rounded-md border border-border bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"

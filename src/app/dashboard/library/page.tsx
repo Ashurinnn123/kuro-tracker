@@ -92,6 +92,27 @@ function LibraryContent() {
     return () => clearTimeout(timer)
   }, [searchQuery, statusFilter, typeFilter, sortBy, updateUrl])
 
+  // Count per status for tabs
+  const statusCounts = useMemo(() => {
+    const counts = { all: 0, reading: 0, want_to_read: 0, completed: 0, on_hold: 0, dropped: 0 }
+    titles.forEach((t) => {
+      counts.all++
+      if (counts[t.status as keyof typeof counts] !== undefined) {
+        counts[t.status as keyof typeof counts]++
+      }
+    })
+    return counts
+  }, [titles])
+
+  const STATUS_TABS: { key: ReadingStatus | "all"; label: string }[] = [
+    { key: "all", label: "All" },
+    { key: "reading", label: "Reading" },
+    { key: "want_to_read", label: "Plan to Read" },
+    { key: "completed", label: "Completed" },
+    { key: "on_hold", label: "On Hold" },
+    { key: "dropped", label: "Dropped" },
+  ]
+
   const filteredAndSortedTitles = useMemo(() => {
     let result = [...titles]
 
@@ -139,6 +160,30 @@ function LibraryContent() {
 
   return (
     <>
+      {/* Status tabs */}
+      <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+        {STATUS_TABS.map((tab) => {
+          const count = statusCounts[tab.key]
+          const active = statusFilter === tab.key
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setStatusFilter(tab.key)}
+              className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                active
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-surface border border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
+              }`}
+            >
+              {tab.label}
+              <span className={`ml-1.5 font-mono text-xs ${active ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                {count}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
       <LibraryToolbar
         searchQuery={searchQuery} setSearchQuery={setSearchQuery}
         statusFilter={statusFilter} setStatusFilter={setStatusFilter}
@@ -146,9 +191,10 @@ function LibraryContent() {
         sortBy={sortBy} setSortBy={setSortBy}
         genreFilter={genreFilter} setGenreFilter={setGenreFilter}
         availableGenres={availableGenres}
+        hiddenStatusFilter
       />
 
-      <div className="flex-1 mt-6">
+      <div className="flex-1 mt-4">
         {filteredAndSortedTitles.length === 0 ? (
           <div className="flex h-64 items-center justify-center rounded-xl border border-dashed border-border bg-surface/50 text-muted-foreground">
             No titles found matching your filters.
