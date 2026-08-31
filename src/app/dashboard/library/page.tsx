@@ -115,6 +115,27 @@ function LibraryContent() {
     { key: "dropped", label: "Dropped" },
   ]
 
+  const TYPE_TABS: { key: MediaType | "all"; label: string }[] = [
+    { key: "all", label: "All" },
+    { key: "manga", label: "Manga" },
+    { key: "manhwa", label: "Manhwa" },
+    { key: "light_novel", label: "Light Novel" },
+  ]
+
+  // Count per type for tabs
+  const typeCounts = useMemo(() => {
+    const counts = { all: 0, manga: 0, manhwa: 0, light_novel: 0 }
+    // Count from already status-filtered list for accurate numbers
+    const statusFiltered = statusFilter === "all" ? titles : titles.filter(t => t.status === statusFilter)
+    statusFiltered.forEach((t) => {
+      counts.all++
+      if (counts[t.media_type as keyof typeof counts] !== undefined) {
+        counts[t.media_type as keyof typeof counts]++
+      }
+    })
+    return counts
+  }, [titles, statusFilter])
+
   const filteredAndSortedTitles = useMemo(() => {
     let result = [...titles]
 
@@ -195,6 +216,30 @@ function LibraryContent() {
         })}
       </div>
 
+      {/* Type tabs */}
+      <div className="flex flex-wrap gap-1.5">
+        {TYPE_TABS.map((tab) => {
+          const count = typeCounts[tab.key]
+          const active = typeFilter === tab.key
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setTypeFilter(tab.key)}
+              className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                active
+                  ? "bg-surface border-2 border-primary text-primary"
+                  : "bg-surface border border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
+              }`}
+            >
+              {tab.label}
+              <span className={`ml-1.5 font-mono text-xs ${active ? "text-primary/80" : "text-muted-foreground"}`}>
+                {count}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
       <LibraryToolbar
         searchQuery={searchQuery} setSearchQuery={setSearchQuery}
         statusFilter={statusFilter} setStatusFilter={setStatusFilter}
@@ -203,6 +248,7 @@ function LibraryContent() {
         genreFilter={genreFilter} setGenreFilter={setGenreFilter}
         availableGenres={availableGenres}
         hiddenStatusFilter
+        hiddenTypeFilter
       />
 
       <div className="flex-1 mt-4">

@@ -29,6 +29,7 @@ interface LibraryToolbarProps {
   setGenreFilter: (g: string[]) => void
   availableGenres: string[]
   hiddenStatusFilter?: boolean
+  hiddenTypeFilter?: boolean
 }
 
 export function LibraryToolbar({
@@ -38,7 +39,8 @@ export function LibraryToolbar({
   sortBy, setSortBy,
   genreFilter, setGenreFilter,
   availableGenres,
-  hiddenStatusFilter
+  hiddenStatusFilter,
+  hiddenTypeFilter
 }: LibraryToolbarProps) {
   const [genreOpen, setGenreOpen] = useState(false)
   const genreRef = useRef<HTMLDivElement>(null)
@@ -89,16 +91,18 @@ export function LibraryToolbar({
             </select>
           )}
 
-          <select
-            className="h-10 rounded-md border border-border bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value as any)}
-          >
-            <option value="all">All Types</option>
-            <option value="manga">Manga</option>
-            <option value="manhwa">Manhwa</option>
-            <option value="light_novel">Light Novel</option>
-          </select>
+          {!hiddenTypeFilter && (
+            <select
+              className="h-10 rounded-md border border-border bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value as any)}
+            >
+              <option value="all">All Types</option>
+              <option value="manga">Manga</option>
+              <option value="manhwa">Manhwa</option>
+              <option value="light_novel">Light Novel</option>
+            </select>
+          )}
 
           <select
             className="h-10 rounded-md border border-border bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
