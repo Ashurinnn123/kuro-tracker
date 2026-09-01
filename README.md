@@ -8,12 +8,13 @@ Track your manga, manhwa, and light novels in one place. Built with Next.js 16, 
 
 - **Explore** — browse trending manga, manhwa, and light novels from AniList. Tabs are partitioned by format, so light novels never leak into the manga tab
 - **Live search preview** — type two characters and get cover thumbnails, scores, and formats inline; click straight through to a detail page
-- **Genre and tag filters** — AniList-style multi-select genre dropdown plus a single tag filter with free text and popular suggestions. Filter state lives in the URL, so the back button restores your exact browse position
-- **Title detail** — banner, description, score, relations, and recommendations. Genre and tag chips are clickable and jump back into a filtered Explore
-- **One-click add** — everything comes from AniList: cover, chapter/volume totals, genres, curated tags, and the correct media type (country of origin decides manga vs manhwa)
-- **Library management** — reading status, progress, notes, and a 1–10 decimal rating. Light novels track volume and chapter independently
+- **Genre and tag filters** — 17 real AniList genres (Action through Thriller) plus a tag filter with free text and popular suggestions. `School` lives as a tag, not a genre. Filter state lives in the URL, so the back button restores your exact browse position
+- **Title detail** — banner, description, score, relations, and recommendations. Genre chips are clickable into a filtered Explore; tags are read-only and searchable via Explore
+- **One-click add** — everything comes from AniList: cover, chapter/volume totals, genres, curated tags (max 8, filtered), and the correct media type (country of origin decides manga vs manhwa)
+- **Library management** — status tabs (All / Reading / Plan to Read / Completed / On Hold / Dropped) and type tabs (All / Manga / Manhwa / Light Novel) with live counts, search, sort, and genre chips. Light novels track volume and chapter independently
+- **Library pagination** — 24 titles per page with WestManga-style numbered controls (`« 1 2 … 10 »`, active page highlighted)
 - **Chapter sync** — pulls the latest chapter count from MangaDex, with AniList and MangaUpdates as fallbacks
-- **Dashboard** — reading stats, streaks, status distribution chart, recently updated shelf, continue-reading card
+- **Dashboard** — reading stats, streaks, recently updated shelf (6 cards with 2 genre + 1 tag snippet), continue-reading card, and a responsive donut breakdown by status with percentage bars
 - **Public shelf** — share a read-only view of your library
 - **Export / import** — take your library out as JSON, bring it back in
 - **Auth** — email confirmation, password reset, and Google OAuth via Supabase SSR middleware
