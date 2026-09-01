@@ -3,7 +3,7 @@
 import { use, useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Trash2, Heart, Plus, Minus, Save, Loader2, RefreshCw, Pencil, X } from "lucide-react"
+import { ArrowLeft, Trash2, Heart, Plus, Minus, Save, Loader2, RefreshCw, Pencil, X, ExternalLink, BookOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -355,6 +355,56 @@ export default function TitleDetailPage({ params }: { params: Promise<{ id: stri
                 </CardContent>
               </Card>
             )}
+
+            {/* Where to read — external links */}
+            <Card>
+              <CardContent className="p-6 space-y-3">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  <h3 className="font-serif text-base italic tracking-tight">Where to Read</h3>
+                </div>
+                <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                  Continue reading on external sites
+                </p>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <a
+                    href={`https://v1.westmanga.top/?s=${encodeURIComponent(title.title)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 font-mono text-xs uppercase tracking-widest text-primary-foreground transition-opacity hover:opacity-90"
+                  >
+                    WestManga <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                  <a
+                    href={`https://mangadex.org/titles?title=${encodeURIComponent(title.title)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-4 py-2 font-mono text-xs uppercase tracking-widest hover:bg-surface-2"
+                  >
+                    MangaDex <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                  {title.media_type === "light_novel" ? (
+                    <a
+                      href={`https://novelupdates.com/?s=${encodeURIComponent(title.title)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-4 py-2 font-mono text-xs uppercase tracking-widest hover:bg-surface-2"
+                    >
+                      NovelUpdates <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  ) : (
+                    <a
+                      href={`https://anilist.co/search/manga?search=${encodeURIComponent(title.title)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-4 py-2 font-mono text-xs uppercase tracking-widest hover:bg-surface-2"
+                    >
+                      AniList <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
             <Button className="w-full font-mono text-xs uppercase tracking-widest" onClick={() => setIsEditing(true)}>
               <Pencil className="h-4 w-4 mr-2" /> Edit Progress & Details
