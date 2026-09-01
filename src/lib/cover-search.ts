@@ -19,6 +19,7 @@ export interface CoverSearchResult {
   genres: string[]
   tags: string[]
   countryOfOrigin?: string | null
+  description?: string | null
 }
 
 const FILTERS: Record<MediaType, string> = {
@@ -41,7 +42,7 @@ export async function searchCovers(
       signal: AbortSignal.timeout(12000),
       body: JSON.stringify({
         query: `query($s:String){Page(perPage:6){media(search:$s,type:MANGA,isAdult:false,${FILTERS[mediaType] || ""}){
-          id title{romaji english} coverImage{large} averageScore format countryOfOrigin chapters volumes genres tags{name}
+          id title{romaji english} coverImage{large} averageScore format countryOfOrigin chapters volumes genres tags{name} description(asHtml:false)
         }}}`,
         variables: { s: query.trim() },
       }),
@@ -76,6 +77,7 @@ export async function searchCovers(
         })
         .slice(0, 8), // cap at 8 tags
       countryOfOrigin: item.countryOfOrigin ?? null,
+      description: (item.description ?? "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]*>/g, "").trim() || null,
     }))
 
     return results.filter((r) => r.imageUrl)
