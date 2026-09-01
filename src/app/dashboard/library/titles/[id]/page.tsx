@@ -383,7 +383,7 @@ export default function TitleDetailPage({ params }: { params: Promise<{ id: stri
                   >
                     MangaDex <ExternalLink className="h-3.5 w-3.5" />
                   </a>
-                  {title.media_type === "light_novel" ? (
+                  {title.media_type === "light_novel" && (
                     <a
                       href={`https://novelupdates.com/?s=${encodeURIComponent(title.title)}`}
                       target="_blank"
@@ -391,15 +391,6 @@ export default function TitleDetailPage({ params }: { params: Promise<{ id: stri
                       className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-4 py-2 font-mono text-xs uppercase tracking-widest hover:bg-surface-2"
                     >
                       NovelUpdates <ExternalLink className="h-3.5 w-3.5" />
-                    </a>
-                  ) : (
-                    <a
-                      href={`https://anilist.co/search/manga?search=${encodeURIComponent(title.title)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-4 py-2 font-mono text-xs uppercase tracking-widest hover:bg-surface-2"
-                    >
-                      AniList <ExternalLink className="h-3.5 w-3.5" />
                     </a>
                   )}
                 </div>
