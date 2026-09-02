@@ -55,6 +55,21 @@ export function ExplorePageInner() {
   const [items, setItems] = useState<ExploreItem[]>([])
   const [loading, setLoading] = useState(true)
   const [hasNext, setHasNext] = useState(false)
+  const [totalPages, setTotalPages] = useState(1)
+
+  function getPageList(current: number, total: number): (number | "...")[] {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+    const pages = new Set<number>([1, total, current])
+    if (current - 1 > 1) pages.add(current - 1)
+    if (current + 1 < total) pages.add(current + 1)
+    const sorted = [...pages].sort((a, b) => a - b)
+    const out: (number | "...")[] = []
+    sorted.forEach((p, i) => {
+      if (i > 0 && p - sorted[i - 1] > 1) out.push("...")
+      out.push(p)
+    })
+    return out
+  }
 
   // Live suggestions while typing — mini preview cards above the grid.
   const [suggests, setSuggests] = useState<ExploreItem[]>([])
@@ -133,7 +148,9 @@ export function ExplorePageInner() {
         const next: ExploreItem[] = data.items ?? []
         setItems(next)
         // Full page = probably more; last page returns fewer than 24.
-        setHasNext(next.length >= 24)
+        const hasMore = next.length >= 24
+        setHasNext(hasMore)
+        setTotalPages((prev) => Math.max(prev, hasMore ? page + 1 : page))
       })
       .catch(() => alive && setItems([]))
       .finally(() => alive && setLoading(false))
@@ -363,23 +380,46 @@ export function ExplorePageInner() {
         </div>
       )}
 
-      {/* Pagination */}
+      {/* Pagination — WestManga style numbered */}
       {!loading && items.length > 0 && (
-        <div className="flex items-center justify-center gap-3 pt-2">
+        <div className="flex flex-wrap items-center justify-center gap-1 pt-4">
           <button
             disabled={page <= 1}
             onClick={() => setPage(page - 1)}
-            className="rounded-md border border-border px-3 py-1.5 font-mono text-xs uppercase tracking-widest disabled:opacity-40 hover:bg-surface-2"
+            className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent"
+            aria-label="Previous page"
           >
-            Prev
+            «
           </button>
-          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Page {page}</span>
+
+          {getPageList(page, totalPages).map((p, i) =>
+            p === "..." ? (
+              <span key={`gap-${i}`} className="px-1.5 text-muted-foreground">
+                …
+              </span>
+            ) : (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                aria-current={p === page ? "page" : undefined}
+                className={`flex h-9 min-w-9 items-center justify-center rounded-md px-2.5 font-mono text-sm transition-colors ${
+                  p === page
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-surface hover:text-foreground"
+                }`}
+              >
+                {p}
+              </button>
+            )
+          )}
+
           <button
             disabled={!hasNext}
             onClick={() => setPage(page + 1)}
-            className="rounded-md border border-border px-3 py-1.5 font-mono text-xs uppercase tracking-widest disabled:opacity-40 hover:bg-surface-2"
+            className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent"
+            aria-label="Next page"
           >
-            Next
+            »
           </button>
         </div>
       )}
