@@ -7,6 +7,7 @@ import {
   Star,
   Zap,
   Bookmark,
+  Search,
 } from "lucide-react"
 
 const FEATURES: { icon: typeof BookOpen; head: string; body: string; foot: string }[] = [
@@ -32,6 +33,9 @@ export default function LandingPageInner() {
           <div className="hidden items-center gap-8 md:flex">
             <Link href="#features" className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary">
               Features
+            </Link>
+            <Link href="#how-it-works" className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary">
+              Cara Kerja
             </Link>
             <Link href="#stats" className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary">
               Tentang
@@ -166,6 +170,41 @@ export default function LandingPageInner() {
                 <li className="flex gap-3"><CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />MangaDex first, AniList fallback; the resolved IP is cached after the first call.</li>
                 <li className="flex gap-3"><CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />Cover search and metadata come from a single GraphQL round-trip.</li>
               </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== CARA KERJA ===== */}
+      <section id="how-it-works" className="py-24">
+        <div className="mx-auto max-w-6xl px-4">
+          <div className="text-center">
+            <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary">Cara Kerja</p>
+            <h2 className="mx-auto max-w-2xl font-serif text-3xl italic leading-tight sm:text-4xl">
+              Track your reading, <span className="text-primary">effortlessly</span>
+            </h2>
+          </div>
+          <div className="mt-14 grid gap-5 md:grid-cols-3">
+            <div className="group flex flex-col gap-4 rounded-2xl border border-border/60 bg-surface p-8 transition-colors hover:border-primary/60">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border/60 bg-background text-primary">
+                <Search className="h-5 w-5" />
+              </div>
+              <h3 className="font-serif text-xl">1. Cari</h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">Temukan manga, manhwa, atau light novel favorit lewat pencarian atau jelajahi koleksi.</p>
+            </div>
+            <div className="group flex flex-col gap-4 rounded-2xl border border-border/60 bg-surface p-8 transition-colors hover:border-primary/60">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border/60 bg-background text-primary">
+                <BookOpen className="h-5 w-5" />
+              </div>
+              <h3 className="font-serif text-xl">2. Baca</h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">Selesai satu chapter? Klik sekali untuk update progress. Dashboard langsung ingat.</p>
+            </div>
+            <div className="group flex flex-col gap-4 rounded-2xl border border-border/60 bg-surface p-8 transition-colors hover:border-primary/60">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border/60 bg-background text-primary">
+                <CheckCircle className="h-5 w-5" />
+              </div>
+              <h3 className="font-serif text-xl">3. Track</h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">Pantau seluruh library dengan filter status, format, dan rating. Semua dalam satu rak.</p>
             </div>
           </div>
         </div>
