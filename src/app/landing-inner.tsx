@@ -34,7 +34,7 @@ export default function LandingPageInner() {
               Features
             </Link>
             <Link href="#stats" className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary">
-              Why Kuro
+              Tentang
             </Link>
           </div>
 
