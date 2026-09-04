@@ -24,13 +24,15 @@ export default function LandingPageInner() {
     <div className="min-h-screen bg-background text-foreground">
       {/* ===== FLOATING PILL NAV ===== */}
       <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4">
-        <nav className="mx-auto flex max-w-5xl items-center justify-between rounded-full border border-border/70 bg-surface/80 px-6 py-3 backdrop-blur-md">
-          <Link href="/" className="flex items-center gap-2.5">
-            {/* eslint-disable-next-line @next/next/no-img-element -- static public asset */}
-            <img src="/kuro-logo.jpg" alt="Kuro" className="h-9 w-9 rounded-md" />
-          </Link>
+        <nav className="mx-auto grid max-w-5xl grid-cols-3 items-center rounded-full border border-border/70 bg-surface/80 px-6 py-3 backdrop-blur-md">
+          <div className="flex items-center">
+            <Link href="/" className="flex items-center gap-2.5">
+              {/* eslint-disable-next-line @next/next/no-img-element -- static public asset */}
+              <img src="/kuro-logo.jpg" alt="Kuro" className="h-9 w-9 rounded-md" />
+            </Link>
+          </div>
 
-          <div className="hidden items-center gap-8 md:flex">
+          <div className="flex items-center justify-center gap-8 md:flex">
             <Link href="#features" className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary">
               Features
             </Link>
@@ -42,7 +44,7 @@ export default function LandingPageInner() {
             </Link>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center justify-end gap-4">
             <Link href="/login" className="hidden font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground sm:inline">
               Log In
             </Link>
