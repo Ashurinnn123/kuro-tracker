@@ -37,10 +37,10 @@ export default function LandingPageInner() {
               Features
             </Link>
             <Link href="#how-it-works" className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary">
-              Cara Kerja
+              How it Works
             </Link>
             <Link href="#stats" className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary">
-              Tentang
+              About
             </Link>
           </div>
 
