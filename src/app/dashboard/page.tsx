@@ -76,8 +76,6 @@ export default function DashboardPage() {
         <ReadingActivity titles={titles} />
         <ReadingChart />
       </div>
-        <ReadingChart />
-      </div>
 
       {continueReading.length > 0 && (
         <div className="space-y-4">
