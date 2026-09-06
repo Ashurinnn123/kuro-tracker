@@ -4,6 +4,7 @@ import { BookOpen, CheckCircle, Heart, Layers } from "lucide-react"
 import { StatTile } from "@/components/dashboard/stat-tile"
 import { ReadingChart } from "@/components/dashboard/reading-chart"
 import { ReadingStats } from "@/components/dashboard/reading-stats"
+import { ReadingActivity } from "@/components/dashboard/reading-activity"
 import { ContinueCard } from "@/components/library/continue-card"
 import { TitleCard } from "@/components/library/title-card"
 import { useLibrary } from "@/components/library/library-provider"
@@ -71,7 +72,10 @@ export default function DashboardPage() {
 
       <ReadingStats titles={titles} />
 
-      <div className="grid gap-4 grid-cols-1 xl:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+        <ReadingActivity titles={titles} />
+        <ReadingChart />
+      </div>
         <ReadingChart />
       </div>
 
