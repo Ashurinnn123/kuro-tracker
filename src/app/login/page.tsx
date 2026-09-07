@@ -1,14 +1,15 @@
 import { ForceDark } from "@/components/theme/force-dark"
 import { LoginPageInner } from "./login-inner"
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { error?: string; message?: string }
+  searchParams: Promise<{ error?: string; message?: string }>
 }) {
+  const { error, message } = await searchParams
   return (
     <ForceDark>
-      <LoginPageInner searchParams={searchParams} />
+      <LoginPageInner error={error} message={message} />
     </ForceDark>
   )
 }
