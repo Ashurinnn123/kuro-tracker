@@ -4,7 +4,7 @@ import { LoginPageInner } from "./login-inner"
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; message?: string }>
+  searchParams: { error?: string; message?: string }
 }) {
   return (
     <ForceDark>
