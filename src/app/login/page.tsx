@@ -1,5 +1,5 @@
 import { ForceDark } from "@/components/theme/force-dark"
-import { LoginPageInner } from "./login-inner"
+import LoginPageInner from "./login-inner"
 
 export default async function LoginPage({
   searchParams,
