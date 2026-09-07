@@ -68,23 +68,26 @@ export async function exploreList(mediaType: MediaType, page: number, search?: s
   if (!Number.isInteger(page) || page < 1 || page > 10) throw new Error("bad page")
   const filter = FILTERS[mediaType] || FILTERS.manga
   const sort = search ? "" : ",sort:TRENDING_DESC"
-  // genre_in matches ANY of the listed genres — same as AniList's filter UI.
   const genreFilter =
     genres && genres.length > 0
       ? `,genre_in:[${genres.map((g) => JSON.stringify(g)).join(",")}]`
       : ""
-  // Single tag filter (AniList has hundreds; free-text keeps it simple).
   const tagFilter = tag ? `,tag_in:[${JSON.stringify(tag)}]` : ""
+
+  // Only include search argument if a search term is provided.
+  const searchArg = search ? `search:$s,` : ""
+  const query = `query(${search ? '$s:String,' : ''}$p:Int){Page(perPage:24,page:$p){media(${searchArg}type:MANGA,isAdult:false,${filter}${sort}${genreFilter}${tagFilter}){id title{romaji english} coverImage{large} description(asHtml:false) averageScore format chapters volumes genres tags{name} status}}}`
+
+  const variables: any = { p: page }
+  if (search) variables.s = search.trim()
+
   try {
     const res = await fetch("https://graphql.anilist.co", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: AbortSignal.timeout(12000),
-      next: { revalidate: 900 }, // cache browse results for 15 min
-      body: JSON.stringify({
-        query: `query($s:String,$p:Int){Page(perPage:24,page:$p){media(search:$s,type:MANGA,isAdult:false,${filter}${sort}${genreFilter}${tagFilter}){id title{romaji english} coverImage{large} description(asHtml:false) averageScore format chapters volumes genres tags{name} status}}}`,
-        variables: { s: search?.trim() || null, p: page },
-      }),
+      next: { revalidate: 900 },
+      body: JSON.stringify({ query, variables }),
     })
     if (!res.ok) return []
     const json = await res.json()
