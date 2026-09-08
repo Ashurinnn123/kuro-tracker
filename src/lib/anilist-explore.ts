@@ -11,6 +11,27 @@ const FILTERS: Record<MediaType, string> = {
   light_novel: "format: NOVEL",
 }
 
+// Jikan genre ID mapping (MyAnimeList genre IDs)
+const genreNameToId: Record<string, number> = {
+  Action: 1,
+  Adventure: 2,
+  Comedy: 4,
+  Drama: 8,
+  Ecchi: 9,
+  Fantasy: 10,
+  Horror: 14,
+  Mecha: 18,
+  Music: 19,
+  Mystery: 7,
+  Psychological: 40,
+  Romance: 22,
+  Sci-Fi: 24,
+  Slice of Life: 36,
+  Sports: 30,
+  Supernatural: 37,
+  Thriller: 41,
+}
+
 interface RawMedia {
   id: number
   title: { romaji: string | null; english: string | null }
@@ -66,22 +87,18 @@ function mapMedia(item: RawMedia) {
 
 export async function exploreList(mediaType: MediaType, page: number, search?: string, genres?: string[], tag?: string) {
   if (!Number.isInteger(page) || page < 1 || page > 10) throw new Error("bad page")
-  const filter = FILTERS[mediaType] || FILTERS.manga
-  const sort = search ? "" : ",sort:TRENDING_DESC"
-  const genreFilter =
-    genres && genres.length > 0
-      ? `,genre_in:[${genres.map((g) => JSON.stringify(g)).join(",")}]`
-      : ""
-  const tagFilter = tag ? `,tag_in:[${JSON.stringify(tag)}]` : ""
-
-  // Only include search argument if a search term is provided.
-  const searchArg = search ? `search:$s,` : ""
-  const query = `query(${search ? '$s:String,' : ''}$p:Int){Page(perPage:24,page:$p){media(${searchArg}type:MANGA,isAdult:false,${filter}${sort}${genreFilter}${tagFilter}){id title{romaji english} coverImage{large} description(asHtml:false) averageScore format chapters volumes genres tags{name} status}}}`
-
-  const variables: any = { p: page }
-  if (search) variables.s = search.trim()
-
   try {
+    const filter = FILTERS[mediaType] || FILTERS.manga
+    const sort = search ? "" : ",sort:TRENDING_DESC"
+    const genreFilter =
+      genres && genres.length > 0
+        ? `,genre_in:[${genres.map((g) => JSON.stringify(g)).join(",")}]`
+        : ""
+    const tagFilter = tag ? `,tag_in:[${JSON.stringify(tag)}]` : ""
+    const searchArg = search ? `search:$s,` : ""
+    const query = `query(${search ? '$s:String,' : ''}$p:Int){Page(perPage:24,page:$p){media(${searchArg}type:MANGA,isAdult:false,${filter}${sort}${genreFilter}${tagFilter}){id title{romaji english} coverImage{large} description(asHtml:false) averageScore format chapters volumes genres tags{name} status}}}`
+    const variables: any = { p: page }
+    if (search) variables.s = search.trim()
     const res = await fetch("https://graphql.anilist.co", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -89,11 +106,14 @@ export async function exploreList(mediaType: MediaType, page: number, search?: s
       next: { revalidate: 900 },
       body: JSON.stringify({ query, variables }),
     })
-    if (!res.ok) return []
+    if (!res.ok) throw new Error(`AniList error ${res.status}`)
     const json = await res.json()
-    return ((json.data?.Page?.media ?? []) as RawMedia[]).map(mapMedia)
-  } catch {
-    return []
+    const items = ((json.data?.Page?.media ?? []) as RawMedia[]).map(mapMedia)
+    return items
+  } catch (e) {
+    // Fallback to Jikan on error (network, 403, etc.)
+    console.warn("AniList failed, using Jikan fallback", e)
+    return await jikanExplore(mediaType, page, search, genres)
   }
 }
 
@@ -143,5 +163,47 @@ export async function exploreDetail(anilistId: number) {
     }
   } catch {
     return null
+  }
+}
+
+async function jikanExplore(mediaType: MediaType, page: number, search?: string, genres?: string[]) {
+  const typeMap: Record<MediaType, string> = {
+    manga: "manga",
+    manhwa: "manhwa",
+    light_novel: "lightnovel",
+  }
+  const url = new URL("https://api.jikan.moe/v4/manga")
+  url.searchParams.set("page", String(page))
+  url.searchParams.set("limit", "24")
+  url.searchParams.set("order_by", "score")
+  url.searchParams.set("sort", "desc")
+  const jikanType = typeMap[mediaType] || "manga"
+  url.searchParams.set("type", jikanType)
+  if (search) {
+    url.searchParams.set("q", search.trim())
+  }
+  if (genres && genres.length > 0) {
+    const ids = genres.map(g => genreNameToId[g]).filter(id => id != null)
+    if (ids.length > 0) {
+      url.searchParams.set("genres", ids.join(","))
+    }
+  }
+  try {
+    const res = await fetch(url.toString(), {
+      signal: AbortSignal.timeout(12000),
+      next: { revalidate: 900 },
+    })
+    if (!res.ok) return []
+    const json = await res.json()
+    const data = json.data || []
+    return data.map((item: any) => ({
+      id: item.mal_id,
+      title: item.title || "?",
+      imageUrl: item.images?.jpg?.image_url || "",
+      score: item.score ? Math.round(item.score * 10) : null,
+      format: item.type || null,
+    }))
+  } catch {
+    return []
   }
 }
