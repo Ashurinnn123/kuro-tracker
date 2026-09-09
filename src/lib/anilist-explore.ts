@@ -112,16 +112,17 @@ export async function exploreList(mediaType: MediaType, page: number, search?: s
     return items
   } catch (e) {
     console.warn("AniList failed", e)
-    try {
-      const jikan = await jikanExplore(mediaType, page, search, genres)
-      if (jikan.length > 0) return jikan
-    } catch {}
-    console.warn("Jikan failed, trying Kitsu fallback")
+    // Try Kitsu first (most reliable)
     try {
       const kitsu = await kitsuExplore(mediaType, page, search)
       if (kitsu.length > 0) return kitsu
     } catch {}
-    console.warn("Kitsu failed, using MangaDex fallback")
+    console.warn("Kitsu failed, trying Jikan fallback")
+    try {
+      const jikan = await jikanExplore(mediaType, page, search, genres)
+      if (jikan.length > 0) return jikan
+    } catch {}
+    console.warn("Jikan failed, using MangaDex fallback")
     return await mangaDexExplore(mediaType, page, search)
   }
 }
