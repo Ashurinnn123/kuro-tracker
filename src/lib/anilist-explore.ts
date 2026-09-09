@@ -110,7 +110,15 @@ export async function exploreList(mediaType: MediaType, page: number, search?: s
     const json = await res.json()
     const items = ((json.data?.Page?.media ?? []) as RawMedia[]).map(mapMedia)
     return items
-  } catch (e) {\n    console.warn("AniList failed", e)\n    try {\n      const jikan = await jikanExplore(mediaType, page, search, genres)\n      if (jikan.length > 0) return jikan\n    } catch {}\n    console.warn("Jikan failed, using MangaDex fallback")\n    return await mangaDexExplore(mediaType, page, search)\n  }
+  } catch (e) {
+    console.warn("AniList failed", e)
+    try {
+      const jikan = await jikanExplore(mediaType, page, search, genres)
+      if (jikan.length > 0) return jikan
+    } catch {}
+    console.warn("Jikan failed, using MangaDex fallback")
+    return await mangaDexExplore(mediaType, page, search)
+  }
 }
 
 export async function exploreDetail(anilistId: number) {
