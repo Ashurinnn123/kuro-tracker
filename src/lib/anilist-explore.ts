@@ -266,6 +266,9 @@ async function kitsuExplore(mediaType: MediaType, page: number, search?: string)
   const res = await fetch(url.toString(), {
     signal: AbortSignal.timeout(12000),
     next: { revalidate: 900 },
+    headers: {
+      "User-Agent": "Mozilla/5.0 (compatible; KuroTracker/1.0; +https://kuro-tracker.vercel.app)"
+    }
   })
   if (!res.ok) throw new Error(`Kitsu error ${res.status}`)
   const json = await res.json()
