@@ -260,6 +260,13 @@ async function kitsuExplore(mediaType: MediaType, page: number, search?: string)
   const url = new URL("https://kitsu.io/api/edge/manga")
   url.searchParams.set("page[limit]", "24")
   url.searchParams.set("page[offset]", String((page - 1) * 24))
+  // Map media type to Kitsu subtype
+  const subtypeMap: Record<MediaType, string> = {
+    manga: "manga",
+    manhwa: "manhwa",
+    light_novel: "novel",
+  }
+  url.searchParams.set("filter[subtype]", subtypeMap[mediaType] || "manga")
   if (search) {
     url.searchParams.set("filter[text]", search.trim())
   }
