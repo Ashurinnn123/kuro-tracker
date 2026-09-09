@@ -110,11 +110,7 @@ export async function exploreList(mediaType: MediaType, page: number, search?: s
     const json = await res.json()
     const items = ((json.data?.Page?.media ?? []) as RawMedia[]).map(mapMedia)
     return items
-  } catch (e) {
-    // Fallback to Jikan on error (network, 403, etc.)
-    console.warn("AniList failed, using Jikan fallback", e)
-    return await jikanExplore(mediaType, page, search, genres)
-  }
+  } catch (e) {\n    console.warn("AniList failed", e)\n    try {\n      const jikan = await jikanExplore(mediaType, page, search, genres)\n      if (jikan.length > 0) return jikan\n    } catch {}\n    console.warn("Jikan failed, using MangaDex fallback")\n    return await mangaDexExplore(mediaType, page, search)\n  }
 }
 
 export async function exploreDetail(anilistId: number) {
@@ -188,22 +184,59 @@ async function jikanExplore(mediaType: MediaType, page: number, search?: string,
       url.searchParams.set("genres", ids.join(","))
     }
   }
-  try {
-    const res = await fetch(url.toString(), {
-      signal: AbortSignal.timeout(12000),
-      next: { revalidate: 900 },
-    })
-    if (!res.ok) return []
-    const json = await res.json()
-    const data = json.data || []
-    return data.map((item: any) => ({
-      id: item.mal_id,
-      title: item.title || "?",
-      imageUrl: item.images?.jpg?.image_url || "",
-      score: item.score ? Math.round(item.score * 10) : null,
-      format: item.type || null,
-    }))
-  } catch {
-    return []
+  const res = await fetch(url.toString(), {
+    signal: AbortSignal.timeout(12000),
+    next: { revalidate: 900 },
+  })
+  if (!res.ok) throw new Error(`Jikan error ${res.status}`)
+  const json = await res.json()
+  const data = json.data || []
+  return data.map((item: any) => ({
+    id: item.mal_id,
+    title: item.title || "?",
+    imageUrl: item.images?.jpg?.image_url || "",
+    score: item.score ? Math.round(item.score * 10) : null,
+    format: item.type || null,
+  }))
+}
+
+async function mangaDexExplore(mediaType: MediaType, page: number, search?: string) {
+  const typeMap: Record<MediaType, string> = {
+    manga: "manga",
+    manhwa: "manhwa",
+    light_novel: "light_novel",
   }
+  const url = new URL("https://api.mangadex.org/manga")
+  url.searchParams.set("limit", "24")
+  url.searchParams.set("offset", String((page - 1) * 24))
+  const mdType = typeMap[mediaType] || "manga"
+  if (mdType === "manga") {
+    url.searchParams.set("includes", "cover_art")
+  } else if (mdType === "manhwa") {
+    url.searchParams.set("contentRating", "safe")
+    url.searchParams.set("publicationDemographic", "manhwa")
+  } else if (mdType === "light_novel") {
+    url.searchParams.set("contentRating", "safe")
+    url.searchParams.set("publicationDemographic", "light_novel")
+  }
+  if (search) {
+    url.searchParams.set("title", search.trim())
+  }
+  const res = await fetch(url.toString(), {
+    signal: AbortSignal.timeout(12000),
+    next: { revalidate: 900 },
+  })
+  if (!res.ok) throw new Error(`MangaDex error ${res.status}`)
+  const json = await res.json()
+  const data = json.data || []
+  return data.map((item: any) => {
+    const cover = item.relationships?.find((r: any) => r.type === "cover_art")?.id
+    return {
+      id: item.id,
+      title: item.attributes?.title?.en || Object.values(item.attributes?.title || {})[0] || "?",
+      imageUrl: cover ? `https://uploads.mangadex.org/covers/${item.id}/${cover}.256.jpg` : "",
+      score: null,
+      format: item.attributes?.publicationDemographic || item.attributes?.contentRating || null,
+    }
+  })
 }
