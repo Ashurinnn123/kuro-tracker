@@ -87,6 +87,20 @@ function mapMedia(item: RawMedia) {
 
 export async function exploreList(mediaType: MediaType, page: number, search?: string, genres?: string[], tag?: string) {
   if (!Number.isInteger(page) || page < 1 || page > 10) throw new Error("bad page")
+  const fallback = async () => {
+    // Try Kitsu first (most reliable)
+    try {
+      const kitsu = await kitsuExplore(mediaType, page, search)
+      if (kitsu.length > 0) return kitsu
+    } catch {}
+    console.warn("Kitsu failed, trying Jikan fallback")
+    try {
+      const jikan = await jikanExplore(mediaType, page, search, genres)
+      if (jikan.length > 0) return jikan
+    } catch {}
+    console.warn("Jikan failed, using MangaDex fallback")
+    return await mangaDexExplore(mediaType, page, search)
+  }
   try {
     const filter = FILTERS[mediaType] || FILTERS.manga
     const sort = search ? "" : ",sort:TRENDING_DESC"
@@ -109,21 +123,13 @@ export async function exploreList(mediaType: MediaType, page: number, search?: s
     if (!res.ok) throw new Error(`AniList error ${res.status}`)
     const json = await res.json()
     const items = ((json.data?.Page?.media ?? []) as RawMedia[]).map(mapMedia)
+    if (items.length === 0) {
+      return await fallback()
+    }
     return items
   } catch (e) {
     console.warn("AniList failed", e)
-    // Try Kitsu first (most reliable)
-    try {
-      const kitsu = await kitsuExplore(mediaType, page, search)
-      if (kitsu.length > 0) return kitsu
-    } catch {}
-    console.warn("Kitsu failed, trying Jikan fallback")
-    try {
-      const jikan = await jikanExplore(mediaType, page, search, genres)
-      if (jikan.length > 0) return jikan
-    } catch {}
-    console.warn("Jikan failed, using MangaDex fallback")
-    return await mangaDexExplore(mediaType, page, search)
+    return await fallback()
   }
 }
 
