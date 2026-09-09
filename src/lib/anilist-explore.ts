@@ -116,7 +116,12 @@ export async function exploreList(mediaType: MediaType, page: number, search?: s
       const jikan = await jikanExplore(mediaType, page, search, genres)
       if (jikan.length > 0) return jikan
     } catch {}
-    console.warn("Jikan failed, using MangaDex fallback")
+    console.warn("Jikan failed, trying Kitsu fallback")
+    try {
+      const kitsu = await kitsuExplore(mediaType, page, search)
+      if (kitsu.length > 0) return kitsu
+    } catch {}
+    console.warn("Kitsu failed, using MangaDex fallback")
     return await mangaDexExplore(mediaType, page, search)
   }
 }
@@ -245,6 +250,34 @@ async function mangaDexExplore(mediaType: MediaType, page: number, search?: stri
       imageUrl: cover ? `https://uploads.mangadex.org/covers/${item.id}/${cover}.256.jpg` : "",
       score: null,
       format: item.attributes?.publicationDemographic || item.attributes?.contentRating || null,
+    }
+  })
+}
+
+async function kitsuExplore(mediaType: MediaType, page: number, search?: string) {
+  // Kitsu API fallback
+  const url = new URL("https://kitsu.io/api/edge/manga")
+  url.searchParams.set("page[limit]", "24")
+  url.searchParams.set("page[offset]", String((page - 1) * 24))
+  if (search) {
+    url.searchParams.set("filter[text]", search.trim())
+  }
+  const res = await fetch(url.toString(), {
+    signal: AbortSignal.timeout(12000),
+    next: { revalidate: 900 },
+  })
+  if (!res.ok) throw new Error(`Kitsu error ${res.status}`)
+  const json = await res.json()
+  const data = json.data || []
+  return data.map((item: any) => {
+    const attrs = item.attributes
+    const cover = attrs?.coverImage?.original || null
+    return {
+      id: parseInt(item.id, 10),
+      title: attrs?.titles?.en_jp || attrs?.titles?.en || attrs?.titles?.ja_jp || "?",
+      imageUrl: cover || "",
+      score: attrs?.averageRating ? Math.round(parseFloat(attrs.averageRating) * 10) / 10 : null,
+      format: attrs?.subtype || attrs?.status || null,
     }
   })
 }
