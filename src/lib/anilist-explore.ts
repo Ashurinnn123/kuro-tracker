@@ -221,23 +221,14 @@ async function jikanExplore(mediaType: MediaType, page: number, search?: string,
 }
 
 async function mangaDexExplore(mediaType: MediaType, page: number, search?: string) {
-  const typeMap: Record<MediaType, string> = {
-    manga: "manga",
-    manhwa: "manhwa",
-    light_novel: "light_novel",
-  }
   const url = new URL("https://api.mangadex.org/manga")
   url.searchParams.set("limit", "24")
   url.searchParams.set("offset", String((page - 1) * 24))
-  const mdType = typeMap[mediaType] || "manga"
-  if (mdType === "manga") {
-    url.searchParams.set("includes", "cover_art")
-  } else if (mdType === "manhwa") {
-    url.searchParams.set("contentRating", "safe")
-    url.searchParams.set("publicationDemographic", "manhwa")
-  } else if (mdType === "light_novel") {
-    url.searchParams.set("contentRating", "safe")
-    url.searchParams.set("publicationDemographic", "light_novel")
+  url.searchParams.set("includes[]", "cover_art")
+  url.searchParams.set("contentRating[]", "safe")
+  url.searchParams.set("order[followedCount]", "desc")
+  if (mediaType === "manhwa") {
+    url.searchParams.set("originalLanguage[]", "ko")
   }
   if (search) {
     url.searchParams.set("title", search.trim())
@@ -264,8 +255,8 @@ async function mangaDexExplore(mediaType: MediaType, page: number, search?: stri
 async function kitsuExplore(mediaType: MediaType, page: number, search?: string) {
   // Kitsu API fallback
   const url = new URL("https://kitsu.io/api/edge/manga")
-  url.searchParams.set("page[limit]", "24")
-  url.searchParams.set("page[offset]", String((page - 1) * 24))
+  url.searchParams.set("page[limit]", "20")
+  url.searchParams.set("page[offset]", String((page - 1) * 20))
   // Map media type to Kitsu subtype
   const subtypeMap: Record<MediaType, string> = {
     manga: "manga",
