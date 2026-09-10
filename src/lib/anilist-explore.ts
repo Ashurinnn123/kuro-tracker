@@ -279,7 +279,7 @@ async function kitsuExplore(mediaType: MediaType, page: number, search?: string)
   const data = json.data || []
   return data.map((item: any) => {
     const attrs = item.attributes
-    const cover = attrs?.coverImage?.original || null
+    const cover = attrs?.coverImage?.original || attrs?.posterImage?.large || null
     return {
       id: parseInt(item.id, 10),
       title: attrs?.titles?.en_jp || attrs?.titles?.en || attrs?.titles?.ja_jp || "?",
