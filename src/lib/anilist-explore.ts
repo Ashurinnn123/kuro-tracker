@@ -189,7 +189,9 @@ export async function exploreDetail(kitsuId: number) {
     const ORDER = ["SEQUEL", "PREQUEL", "SIDE_STORY", "SPIN_OFF"]
     const relJson = relRes.ok ? await relRes.json() : { data: [], included: [] }
     const destById = new Map<string, any>((relJson.included ?? []).map((i: any) => [i.id, i]))
-    const seenRel = new Set<number>()
+    // Kitsu can carry one title as several distinct records (same canonicalTitle,
+    // different id), so dedupe by title, not id. Sort already put highest-priority role first.
+    const seenRel = new Set<string>()
     const relations = (relJson.data ?? [])
       .flatMap((r: any) => {
         const relation = RELATION[r.attributes?.role]
@@ -199,16 +201,19 @@ export async function exploreDetail(kitsuId: number) {
         return mapped.imageUrl ? [mapped] : []
       })
       .sort((a: any, b: any) => ORDER.indexOf(a.relation) - ORDER.indexOf(b.relation))
-      // Same title can carry several roles; keep the highest-priority one.
-      .filter((r: any) => !seenRel.has(r.id) && seenRel.add(r.id))
+      .filter((r: any) => !seenRel.has(r.title) && seenRel.add(r.title))
       .slice(0, 12)
 
+    // AniList genre_in only accepts its own genre list; anything else is a tag.
+    const ANILIST_GENRES = new Set([
+      "Action", "Adventure", "Comedy", "Drama", "Ecchi", "Fantasy", "Gourmet",
+      "Horror", "Mystery", "Romance", "Sci-Fi", "Slice of Life", "Sports",
+      "Supernatural", "Suspense",
+    ])
     return {
       ...mapKitsuManga(json.data),
-      genres: categories.slice(0, 5),
-      // ponytail: Kitsu categories have no genre/theme split, so tags just take the tail.
-      // Swap for a real taxonomy if a source with groups lands.
-      tags: categories.slice(5, 8),
+      genres: categories.filter((c) => ANILIST_GENRES.has(c)).slice(0, 5),
+      tags: categories.filter((c) => !ANILIST_GENRES.has(c)).slice(0, 8),
       recommendations: [],
       relations,
     }
