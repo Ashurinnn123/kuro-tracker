@@ -296,7 +296,12 @@ async function kitsuExplore(mediaType: MediaType, page: number, search?: string)
   // Kitsu API fallback
   const url = new URL("https://kitsu.io/api/edge/manga")
   url.searchParams.set("page[limit]", "20")
-  url.searchParams.set("page[offset]", String((page - 1) * 20))
+  // Kitsu re-serves the same window for the first offset step, so offset 0 and
+  // offset 20 return identical items. Page past that duplicate window.
+  // ponytail: the 20 items in the skipped window stay unreachable; move to
+  // another provider if the full catalog ever matters.
+  const offset = page <= 1 ? 0 : (page - 1) * 20 + 20
+  url.searchParams.set("page[offset]", String(offset))
   // Map media type to Kitsu subtype
   const subtypeMap: Record<MediaType, string> = {
     manga: "manga",
