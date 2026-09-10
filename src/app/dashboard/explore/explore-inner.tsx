@@ -139,10 +139,10 @@ export function ExplorePageInner() {
         if (!alive) return
         const next: ExploreItem[] = data.items ?? []
         setItems(next)
-        // Full page = probably more; last page returns fewer than 24.
-        const hasMore = next.length >= 24
+        // Full page = probably more. Kitsu caps a page at 20 items.
+        const hasMore = next.length >= 20
         setHasNext(hasMore)
-        setTotalPages((prev) => Math.max(prev, hasMore ? page + 1 : page))
+        setTotalPages(hasMore ? page + 1 : Math.max(1, page))
       })
       .catch(() => alive && setItems([]))
       .finally(() => alive && setLoading(false))
