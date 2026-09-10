@@ -176,7 +176,7 @@ export async function exploreDetail(kitsuId: number) {
     if (!json.data) return null
 
     const categories: string[] = (json.included ?? [])
-      .filter((i: any) => i.type === "category")
+      .filter((i: any) => i.type === "categories")
       .map((i: any) => i.attributes?.title)
       .filter(Boolean)
 
