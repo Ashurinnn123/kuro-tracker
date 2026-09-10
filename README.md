@@ -88,8 +88,6 @@ Run the migrations from `supabase/migrations/` in order (`0001` through `0011`),
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
 ## Project Layout
 
 ```
