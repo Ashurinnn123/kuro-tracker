@@ -277,6 +277,15 @@ function LibraryContent() {
             &laquo;
           </button>
 
+          <button
+            disabled={currentPage <= 1}
+            onClick={() => setPage(Math.max(1, currentPage - 10))}
+            className="flex h-9 min-w-9 items-center justify-center rounded-md px-2 font-mono text-xs text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent"
+            aria-label="Back 10 pages"
+          >
+            -10
+          </button>
+
           {getPageList(currentPage, totalPages).map((p, i) =>
             p === "..." ? (
               <span key={`gap-${i}`} className="px-1.5 text-muted-foreground">
@@ -297,6 +306,15 @@ function LibraryContent() {
               </button>
             )
           )}
+
+          <button
+            disabled={currentPage + 10 > totalPages}
+            onClick={() => setPage(Math.min(currentPage + 10, totalPages))}
+            className="flex h-9 min-w-9 items-center justify-center rounded-md px-2 font-mono text-xs text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent"
+            aria-label="Forward 10 pages"
+          >
+            +10
+          </button>
 
           <button
             disabled={currentPage >= totalPages}
