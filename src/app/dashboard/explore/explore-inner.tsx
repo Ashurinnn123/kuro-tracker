@@ -58,17 +58,9 @@ export function ExplorePageInner() {
   const [totalPages, setTotalPages] = useState(1)
 
   function getPageList(current: number, total: number): (number | "...")[] {
-    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
-    const pages = new Set<number>([1, total, current])
-    if (current - 1 > 1) pages.add(current - 1)
-    if (current + 1 < total) pages.add(current + 1)
-    const sorted = [...pages].sort((a, b) => a - b)
-    const out: (number | "...")[] = []
-    sorted.forEach((p, i) => {
-      if (i > 0 && p - sorted[i - 1] > 1) out.push("...")
-      out.push(p)
-    })
-    return out
+    const span = Math.min(10, total)
+    const start = Math.max(1, Math.min(current - 4, total - span + 1))
+    return Array.from({ length: span }, (_, i) => start + i)
   }
 
   // Live suggestions while typing — mini preview cards above the grid.
@@ -392,15 +384,6 @@ export function ExplorePageInner() {
             «
           </button>
 
-          <button
-            disabled={page <= 1}
-            onClick={() => setPage(Math.max(1, page - 10))}
-            className="flex h-9 min-w-9 items-center justify-center rounded-md px-2 font-mono text-xs text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent"
-            aria-label="Back 10 pages"
-          >
-            -10
-          </button>
-
           {getPageList(page, totalPages).map((p, i) =>
             p === "..." ? (
               <span key={`gap-${i}`} className="px-1.5 text-muted-foreground">
@@ -421,15 +404,6 @@ export function ExplorePageInner() {
               </button>
             )
           )}
-
-          <button
-            disabled={page + 10 > totalPages}
-            onClick={() => setPage(Math.min(page + 10, totalPages))}
-            className="flex h-9 min-w-9 items-center justify-center rounded-md px-2 font-mono text-xs text-muted-foreground transition-colors hover:bg-surface hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent"
-            aria-label="Forward 10 pages"
-          >
-            +10
-          </button>
 
           <button
             disabled={!hasNext}
