@@ -37,10 +37,11 @@ const RELATION_LABEL: Record<string, string> = {
   SPIN_OFF: "Spin-off",
 }
 
-// Map AniList format/country → Kuro media type for the Add flow.
+// Map source format/country → Kuro media type for the Add flow.
 function inferMediaType(m: ExploreMedia): MediaType {
-  if (m.format === "NOVEL") return "light_novel"
-  if (m.countryOfOrigin === "KR" || m.countryOfOrigin === "CN") return "manhwa"
+  const f = (m.format ?? "").toLowerCase()
+  if (f === "novel") return "light_novel"
+  if (f === "manhwa" || f === "manhua" || m.countryOfOrigin === "KR" || m.countryOfOrigin === "CN") return "manhwa"
   return "manga"
 }
 

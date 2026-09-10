@@ -133,48 +133,78 @@ export async function exploreList(mediaType: MediaType, page: number, search?: s
   }
 }
 
-export async function exploreDetail(anilistId: number) {
-  if (!Number.isSafeInteger(anilistId)) throw new Error("bad id")
+const KITSU_UA = "Mozilla/5.0 (compatible; KuroTracker/1.0; +https://kuro-tracker.vercel.app)"
+
+// posterImage = portrait (grid + detail cover), coverImage = landscape banner.
+function mapKitsuManga(item: any) {
+  const attrs = item?.attributes ?? {}
+  return {
+    id: parseInt(item.id, 10),
+    title: attrs.canonicalTitle || attrs.titles?.en_jp || attrs.titles?.en || "?",
+    imageUrl: attrs.posterImage?.large || attrs.coverImage?.original || "",
+    bannerUrl: attrs.coverImage?.original ?? null,
+    description: attrs.synopsis ?? "",
+    score: attrs.averageRating ? Math.round(parseFloat(attrs.averageRating) * 10) / 10 : null,
+    format: attrs.subtype ?? null,
+    chapters: attrs.chapterCount ?? null,
+    volumes: attrs.volumeCount ?? null,
+    genres: [] as string[],
+    tags: [] as string[],
+    status: attrs.status ?? null,
+    countryOfOrigin: null as string | null,
+  }
+}
+
+// Detail is Kitsu-backed too: explore list ships Kitsu ids, so AniList Media(id:) can't resolve them.
+export async function exploreDetail(kitsuId: number) {
+  if (!Number.isSafeInteger(kitsuId)) throw new Error("bad id")
   try {
-    const res = await fetch("https://graphql.anilist.co", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: AbortSignal.timeout(12000),
-      next: { revalidate: 3600 }, // detail pages barely change — cache 1 hour
-      body: JSON.stringify({
-        query: `query($id:Int){Media(id:$id,type:MANGA){
-          id title{romaji english} coverImage{large} bannerImage description(asHtml:false)
-          averageScore format chapters volumes genres tags{name} status countryOfOrigin
-          recommendations(perPage:8){nodes{mediaRecommendation{id title{romaji english} coverImage{large} averageScore format}}}
-          relations{edges{relationType(version:2) node{id type title{romaji english} coverImage{large} format}}}
-        }}`,
-        variables: { id: anilistId },
+    const [res, relRes] = await Promise.all([
+      fetch(`https://kitsu.io/api/edge/manga/${kitsuId}?include=categories`, {
+        headers: { "User-Agent": KITSU_UA },
+        signal: AbortSignal.timeout(12000),
+        next: { revalidate: 3600 },
       }),
-    })
+      fetch(`https://kitsu.io/api/edge/manga/${kitsuId}/media-relationships?include=destination`, {
+        headers: { "User-Agent": KITSU_UA },
+        signal: AbortSignal.timeout(12000),
+        next: { revalidate: 3600 },
+      }),
+    ])
     if (!res.ok) return null
     const json = await res.json()
-    const m = json.data?.Media as (RawMedia & {
-      recommendations?: { nodes: { mediaRecommendation: RawMedia | null }[] }
-      relations?: { edges: { relationType: string; node: RawMedia & { type: string } }[] }
-    }) | undefined
-    if (!m) return null
+    if (!json.data) return null
 
-    // Sequel/prequel edges — filter to manga-type nodes only.
-    // Sequel/prequel first; cap at 12 so spin-off floods don't bury them.
-    const RELATION_PRIORITY = ["SEQUEL", "PREQUEL", "SIDE_STORY", "SPIN_OFF"]
-    const relations = (m.relations?.edges ?? [])
-      .filter((e) => e.node?.type === "MANGA" && RELATION_PRIORITY.includes(e.relationType))
-      .sort((a, b) => RELATION_PRIORITY.indexOf(a.relationType) - RELATION_PRIORITY.indexOf(b.relationType))
+    const categories: string[] = (json.included ?? [])
+      .filter((i: any) => i.type === "category")
+      .map((i: any) => i.attributes?.title)
+      .filter(Boolean)
+
+    const RELATION: Record<string, string> = {
+      sequel: "SEQUEL",
+      prequel: "PREQUEL",
+      side_story: "SIDE_STORY",
+      spin_off: "SPIN_OFF",
+    }
+    const ORDER = ["SEQUEL", "PREQUEL", "SIDE_STORY", "SPIN_OFF"]
+    const relJson = relRes.ok ? await relRes.json() : { data: [], included: [] }
+    const destById = new Map<string, any>((relJson.included ?? []).map((i: any) => [i.id, i]))
+    const relations = (relJson.data ?? [])
+      .flatMap((r: any) => {
+        const relation = RELATION[r.attributes?.role]
+        const dest = destById.get(r.relationships?.destination?.data?.id)
+        if (!relation || !dest) return []
+        const mapped = { relation, ...mapKitsuManga(dest) }
+        return mapped.imageUrl ? [mapped] : []
+      })
+      .sort((a: any, b: any) => ORDER.indexOf(a.relation) - ORDER.indexOf(b.relation))
       .slice(0, 12)
-      .map((e) => ({ relation: e.relationType, ...mapMedia(e.node)! }))
-      .filter((r) => r.imageUrl)
 
     return {
-      ...mapMedia(m),
-      recommendations: (m.recommendations?.nodes ?? [])
-        .map((n) => n.mediaRecommendation)
-        .filter((r): r is RawMedia => r != null && !!r.coverImage?.large)
-        .map(mapMedia),
+      ...mapKitsuManga(json.data),
+      genres: categories.slice(0, 5),
+      tags: categories.slice(0, 8),
+      recommendations: [],
       relations,
     }
   } catch {
