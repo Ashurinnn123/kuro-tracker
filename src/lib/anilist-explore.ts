@@ -189,6 +189,7 @@ export async function exploreDetail(kitsuId: number) {
     const ORDER = ["SEQUEL", "PREQUEL", "SIDE_STORY", "SPIN_OFF"]
     const relJson = relRes.ok ? await relRes.json() : { data: [], included: [] }
     const destById = new Map<string, any>((relJson.included ?? []).map((i: any) => [i.id, i]))
+    const seenRel = new Set<number>()
     const relations = (relJson.data ?? [])
       .flatMap((r: any) => {
         const relation = RELATION[r.attributes?.role]
@@ -198,12 +199,16 @@ export async function exploreDetail(kitsuId: number) {
         return mapped.imageUrl ? [mapped] : []
       })
       .sort((a: any, b: any) => ORDER.indexOf(a.relation) - ORDER.indexOf(b.relation))
+      // Same title can carry several roles; keep the highest-priority one.
+      .filter((r: any) => !seenRel.has(r.id) && seenRel.add(r.id))
       .slice(0, 12)
 
     return {
       ...mapKitsuManga(json.data),
       genres: categories.slice(0, 5),
-      tags: categories.slice(0, 8),
+      // ponytail: Kitsu categories have no genre/theme split, so tags just take the tail.
+      // Swap for a real taxonomy if a source with groups lands.
+      tags: categories.slice(5, 8),
       recommendations: [],
       relations,
     }
